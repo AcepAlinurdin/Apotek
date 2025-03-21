@@ -29,3 +29,22 @@ return new class extends Migration
         Schema::dropIfExists('sessions');
     }
 };
+return new class extends Migration {
+    public function up(): void
+    {
+        Schema::create('penjualan_obat', function (Blueprint $table) {
+            $table->id();
+            $table->string('nama_obat', 100);
+            $table->decimal('harga', 10, 2);
+            $table->date('tanggal_keluar');
+            $table->integer('jumlah_pembelian');
+            $table->decimal('total_harga', 10, 2);
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('penjualan_obat');
+    }
+};
