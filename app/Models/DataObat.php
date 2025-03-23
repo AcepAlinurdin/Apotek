@@ -11,7 +11,7 @@ class DataObat extends Model
 {
     use HasFactory;
 
-    protected $table = 'data_obat'; // Nama tabel di database
+    protected $table = 'data_obat';
 
-    protected $fillable = ['nama_obat', 'harga', 'stok']; // Kolom yang bisa diisi
+    protected $fillable = ['nama_obat', 'harga', 'stok'];
 }
