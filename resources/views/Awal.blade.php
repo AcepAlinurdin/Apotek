@@ -10,7 +10,7 @@
     
     <!-- Navbar -->
     <nav class="bg-blue-700 text-white p-4 rounded-xl mb-4">
-        <h1 class="text-xl font-bold">Dashboard Apotek</h1>
+        <h1 class="text-xl font-bold"> Apotek</h1>
     </nav>
 
     <!-- Statistik & Menu -->
@@ -24,7 +24,7 @@
             <p class="text-2xl font-semibold">Rp 2.500.000</p>
         </div>
         <div class="bg-white p-6 rounded-xl shadow text-center">
-            <h2 class="text-lg font-bold">Obat Hampir Habis</h2>
+            <h2 class="text-lg font-bold">ObatHabis</h2>
             <p class="text-2xl font-semibold">5 Item</p>
         </div>
     </div>
