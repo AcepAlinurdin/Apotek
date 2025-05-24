@@ -18,7 +18,7 @@ use Illuminate\Http\Request;
 Route::get('/', function () {
     return view('welcome');
 });
-Route::get('/Dasboard', function () {
+Route::get('/beranda', function () {
     return view('Awal');
 });
 Route::get('/PengelolaanObat', function () {
