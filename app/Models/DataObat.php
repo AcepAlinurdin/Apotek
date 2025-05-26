@@ -4,14 +4,19 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\DataObat;
-use Illuminate\Support\Facades\Route;
 
 class DataObat extends Model
 {
     use HasFactory;
 
-    protected $table = 'data_obat';
+    protected $table = 'data_obat'; // Pastikan sama dengan nama tabel di database
+    protected $fillable = ['nama_obat', 'harga_satuan', 'stok'];
 
-    protected $fillable = ['nama_obat', 'harga', 'stok'];
+    /**
+     * Relasi one-to-many ke model Penjualan
+     */
+    public function penjualan()
+    {
+        return $this->hasMany(Penjualan::class, 'obat_id');
+    }
 }

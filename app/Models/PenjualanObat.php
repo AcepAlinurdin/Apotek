@@ -9,20 +9,23 @@ class PenjualanObat extends Model
 {
     use HasFactory;
 
-    protected $table = 'penjualan_obat';
-    protected $fillable = ['obat_id', 'jumlah_pembelian', 'total_harga', 'tanggal_penjualan'];
+    protected $table = 'data_penjualan'; // Pastikan ini sesuai dengan nama tabel Anda
 
+    protected $fillable = [
+        'obat_id',
+        'kode_obat',
+        'nama_obat',
+        'qty',
+        // 'harga_satuan', // HAPUS BARIS INI
+        'total_harga',   // PASTIKAN BARIS INI ADA
+        'tanggal',
+    ];
+
+    /**
+     * Mendefinisikan relasi ke model DataObat.
+     */
     public function obat()
     {
         return $this->belongsTo(DataObat::class, 'obat_id');
-    }
-
-    // Fungsi untuk mengurangi stok saat terjadi penjualan
-    protected static function boot()
-    {
-        parent::boot();
-        static::created(function ($penjualan) {
-            $penjualan->obat->decrement('stok', $penjualan->jumlah_pembelian);
-        });
     }
 }

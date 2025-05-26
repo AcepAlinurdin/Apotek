@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Models\DataObat;
 use Illuminate\Http\Request;
+use App\Http\Controllers\ObatController;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,10 +25,11 @@ Route::get('/beranda', function () {
 Route::get('/PengelolaanObat', function () {
     return view('kedua');
 });
-Route::get('/Pembelian', function () {
-    return view('ketiga');
-});
 
+
+// Rute untuk menampilkan halaman daftar obat (indeks)
+Route::get('/obat', [ObatController::class, 'index']);
+Route::post('/checkout', [ObatController::class, 'checkout'])->name('checkout');
 
 Route::get('/data-obat', function () {
     $obat = DataObat::all();
