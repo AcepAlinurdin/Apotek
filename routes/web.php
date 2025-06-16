@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Models\DataObat;
 use Illuminate\Http\Request;
 use App\Http\Controllers\ObatController;
+use App\Http\Controllers\master_dataController;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,17 +20,22 @@ use App\Http\Controllers\ObatController;
 Route::get('/', function () {
     return view('welcome');
 });
-Route::get('/beranda', function () {
-    return view('Awal');
-});
-Route::get('/PengelolaanObat', function () {
-    return view('kedua');
-});
+// Route::get('/perhitungan', function () {
+//     return view('perhitungan');
+// });
+
+// Route untuk menampilkan halaman master data obat
+Route::get('/master_data', [ObatController::class, 'masterIndex'])->name('obat.master.index');
+Route::post('/master_data', [ObatController::class, 'masterStore'])->name('obat.master.store');
+Route::put('/master_data/{id}', [ObatController::class, 'masterUpdate'])->name('obat.master.update');
+Route::delete('/master_data/{id}', [ObatController::class, 'masterDestroy'])->name('obat.master.destroy');
 
 
 // Rute untuk menampilkan halaman daftar obat (indeks)
-Route::get('/obat', [ObatController::class, 'index']);
+Route::get('/penjualan', [ObatController::class, 'index']);
 Route::post('/checkout', [ObatController::class, 'checkout'])->name('checkout');
+Route::get('/perhitungan', [ObatController::class, 'showRekapStok'])->name('obat.rekap');
+Route::get('/peramalan', [ObatController::class, 'hitungPeramalan'])->name('obat.peramalan');
 
 Route::get('/data-obat', function () {
     $obat = DataObat::all();

@@ -9,14 +9,40 @@ class DataObat extends Model
 {
     use HasFactory;
 
-    protected $table = 'data_obat'; // Pastikan sama dengan nama tabel di database
-    protected $fillable = ['nama_obat', 'harga_satuan', 'stok'];
+    protected $table = 'data_obat';
 
     /**
-     * Relasi one-to-many ke model Penjualan
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    // Memastikan semua kolom dari form bisa diisi
+    protected $fillable = [
+        'tanggal',
+        'kode_obat',
+        'nama_obat',
+        'kategori',
+        'supplier',
+        'qty', // Nama kolom di database untuk stok
+        'harga_satuan',
+        'harga_box'
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array
+     */
+    // Memberitahu Laravel bahwa kolom 'tanggal' harus diperlakukan sebagai objek tanggal
+    protected $casts = [
+        'tanggal' => 'date',
+    ];
+
+    /**
+     * Relasi one-to-many ke model PenjualanObat.
      */
     public function penjualan()
     {
-        return $this->hasMany(Penjualan::class, 'obat_id');
+        return $this->hasMany(PenjualanObat::class, 'obat_id');
     }
 }

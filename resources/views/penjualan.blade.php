@@ -8,61 +8,73 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
-<body class="bg-gray-100 p-6">
-    <nav class="bg-green-700 text-white p-4 rounded-xl mb-4">
-        <h1 class="text-xl font-bold">Penjualan Obat</h1>
-    </nav>
+<body class="bg-gray-100 p-8">
+  <nav class="bg-green-700 text-white p-4 rounded-xl mb-4 flex justify-between items-center">
+  <h1 class="text-xl font-bold">Apotek Parakan Muncang</h1>
+  <div class="space-x-4">
+    <a href="/master_data" class="hover:underline">Master Data</a>
+    <a href="/perhitungan" class="hover:underline">Pembelian</a>
+    <a href="/penjualan" class="font-bold underline">Kasir</a>
+  </div>
+</nav>
+
 
     <div class="grid grid-cols-2 gap-6">
         {{-- Daftar Obat --}}
         <div class="bg-white p-4 rounded-xl shadow">
             <h2 class="text-lg font-bold mb-2">Daftar Obat</h2>
             <input type="text" id="search-medicine" placeholder="Cari obat..." class="w-full p-2 border rounded mb-3" />
-            <table class="w-full border-collapse">
-                <thead>
-                    <tr class="bg-gray-200">
-                        <th class="p-2">Nama Obat</th>
-                        <th class="p-2">Harga</th>
-                        <th class="p-2">Stok</th>
-                        <th class="p-2">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="medicine-list">
-                    @foreach($obats as $obat)
-                    <tr class="medicine-row" data-name="{{ $obat->nama_obat }}">
-                        <td class="p-2">{{ $obat->nama_obat }}</td>
-                        <td class="p-2">Rp {{ number_format($obat->harga_satuan, 0, ',', '.') }}</td>
-                        <td class="p-2">{{ $obat->qty }}</td>
-                        <td class="p-2">
-                            <button
-                                class="add-btn bg-blue-500 text-white px-3 py-1 rounded"
-                                data-name="{{ $obat->nama_obat }}"
-                                data-price="{{ $obat->harga_satuan }}"
-                                {{ $obat->qty <= 0 ? 'disabled' : '' }}
-                            >
-                                {{ $obat->qty <= 0 ? 'Stok Habis' : 'Tambah' }}
-                            </button>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
+            {{-- Wrapper untuk scroll --}}
+            <div class="overflow-y-auto max-h-80">
+                <table class="w-full border-collapse">
+                    <thead class="sticky top-0 bg-gray-200 z-10"> {{-- Header dibuat sticky --}}
+                        <tr>
+                            <th class="p-2">Nama Obat</th>
+                            <th class="p-2">Harga</th>
+                            <th class="p-2">Stok</th>
+                            <th class="p-2">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="medicine-list">
+                        @foreach($obats as $obat)
+                        <tr class="medicine-row " data-name="{{ $obat->nama_obat }}">
+                            <td class="p-2 text-start">{{ $obat->nama_obat }}</td>
+                            <td class="p-2 text-center">Rp {{ number_format($obat->harga_satuan, 0, ',', '.') }}</td>
+                            <td class="p-2 text-center">{{ $obat->qty }}</td>
+                            <td class="p-2 text-center">
+                                <button
+                                    class="add-btn bg-green-500 text-white px-3 py-1 rounded hover:bg-green-300 text-sm"
+                                    data-name="{{ $obat->nama_obat }}"
+                                    data-price="{{ $obat->harga_satuan }}"
+                                    {{ $obat->qty <= 0 ? 'disabled' : '' }}
+                                >
+                                    {{ $obat->qty <= 0 ? 'Stok Habis' : 'Tambahkan' }}
+                                </button>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         {{-- Keranjang Belanja --}}
         <div class="bg-white p-4 rounded-xl shadow">
             <h2 class="text-lg font-bold mb-2">Keranjang Belanja</h2>
-            <table class="w-full border-collapse">
-                <thead>
-                    <tr class="bg-gray-200">
-                        <th class="p-2">Nama Obat</th>
-                        <th class="p-2">Jumlah</th>
-                        <th class="p-2">Total</th>
-                        <th class="p-2">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="cart-items"></tbody>
-            </table>
+            {{-- Wrapper untuk scroll --}}
+            <div class="overflow-y-auto max-h-72">
+                <table class="w-full border-collapse text-center">
+                    <thead class="sticky top-0 bg-gray-200 z-10 "> {{-- Header dibuat sticky --}}
+                        <tr>
+                            <th class="p-2">Nama Obat</th>
+                            <th class="p-2">Jumlah</th>
+                            <th class="p-2">Total</th>
+                            <th class="p-2">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cart-items"></tbody>
+                </table>
+            </div>
             <div class="mt-4 text-right">
                 <strong>Total: <span id="total-price">Rp 0</span></strong>
             </div>
@@ -70,44 +82,41 @@
         </div>
     </div>
 
-    {{-- Riwayat Penjualan --}}
-    <div class="bg-white p-4 rounded-xl shadow mt-6">
-        <h2 class="text-lg font-bold mb-2">Riwayat Penjualan</h2>
-        <table class="w-full border-collapse">
-            <thead>
-                <tr class="bg-gray-200">
-                    <th class="p-2">Tanggal</th>
-                    <th class="p-2">Nama Obat</th>
-                    <th class="p-2">Jumlah</th>
-                    <th class="p-2">Total Harga</th> {{-- Mengganti "Total" menjadi "Total Harga" agar lebih jelas --}}
+   
+<div class="bg-white p-4 rounded-xl shadow mt-6">
+    <h2 class="text-lg font-bold mb-2">Riwayat Penjualan</h2>
+   
+    <table class="w-full border-collapse text-center">
+        <thead class="sticky top-0 bg-gray-200 z-10"> 
+            <tr>
+                <th class="p-2 text-center">Tanggal</th>
+                <th class="p-2">Nama Obat</th>
+                <th class="p-2 text-center">Jumlah</th>
+                <th class="p-2 text-center">Total Harga</th>
+            </tr>
+        </thead>
+        <tbody id="sales-history">
+            @if($riwayatPenjualans->count() > 0)
+                @foreach($riwayatPenjualans as $penjualan)
+                <tr>
+                    <td class="p-2">{{ \Carbon\Carbon::parse($penjualan->tanggal)->format('d-m-Y') }}</td>
+                    <td class="p-2">{{ $penjualan->nama_obat }}</td>
+                    <td class="p-2">{{ $penjualan->qty }}</td>
+                    <td class="p-2">Rp {{ number_format($penjualan->total_harga, 0, ',', '.') }}</td>
                 </tr>
-            </thead>
-            <tbody id="sales-history">
-                {{-- Cek apakah ada riwayat penjualan --}}
-                @if($riwayatPenjualans->count() > 0)
-                    @foreach($riwayatPenjualans as $penjualan)
-                    <tr>
-                        {{-- Format tanggal. Asumsi 'tanggal' adalah objek Carbon atau string tanggal Y-m-d H:i:s --}}
-                        <td class="p-2">{{ \Carbon\Carbon::parse($penjualan->tanggal)->format('d-m-Y H:i') }}</td>
-                        <td class="p-2">{{ $penjualan->nama_obat }}</td>
-                        <td class="p-2">{{ $penjualan->qty }}</td>
-                        {{-- Format total_harga sebagai mata uang Rupiah --}}
-                        <td class="p-2">Rp {{ number_format($penjualan->total_harga, 0, ',', '.') }}</td>
-                    </tr>
-                    @endforeach
-                @else
-                    <tr>
-                        <td colspan="4" class="p-2 text-center text-gray-500">Belum ada riwayat penjualan.</td>
-                    </tr>
-                @endif
-            </tbody>
-        </table>
-    </div>
+                @endforeach
+            @else
+                <tr>
+                    <td colspan="4" class="p-2 text-center text-gray-500">Belum ada riwayat penjualan.</td>
+                </tr>
+            @endif
+        </tbody>
+    </table>
+    {{-- </div> --}} {{-- Penutup div wrapper scroll untuk Riwayat Penjualan --}}
+</div>
 
     <script>
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
-        // ... (kode JavaScript untuk tambah obat ke keranjang dan updateTotalPrice tetap sama) ...
         document.querySelectorAll('.add-btn').forEach(button => {
             button.addEventListener('click', function () {
                 const medicineName = this.dataset.name;
@@ -123,7 +132,7 @@
                 } else {
                     const cartRow = document.createElement('tr');
                     cartRow.dataset.name = medicineName;
-                    cartRow.dataset.price = medicinePrice; // Tetap simpan harga satuan di data-attribute untuk JS keranjang
+                    cartRow.dataset.price = medicinePrice;
                     cartRow.innerHTML = `
                         <td class="p-2">${medicineName}</td>
                         <td class="p-2">1</td>
@@ -151,8 +160,6 @@
             document.getElementById('total-price').textContent = `Rp ${total.toLocaleString('id-ID')}`;
         }
 
-
-        // Checkout dan kirim data ke server
         document.getElementById('checkout-btn').addEventListener('click', function () {
             const cartItemsEl = document.querySelectorAll('#cart-items tr');
 
@@ -168,10 +175,8 @@
             let cartItems = [];
             cartItemsEl.forEach(item => {
                 cartItems.push({
-                    name: item.dataset.name, // Nama obat dari data-attribute
+                    name: item.dataset.name, 
                     quantity: parseInt(item.querySelector('td:nth-child(2)').textContent),
-                    // Harga satuan tidak perlu dikirim ke backend untuk disimpan di data_penjualan
-                    // karena backend akan mengambilnya dari DataObat berdasarkan 'name'
                 });
             });
 
@@ -183,41 +188,39 @@
                 },
                 body: JSON.stringify({ cartItems }),
             })
-            .then((res) => { // Periksa apakah respons adalah JSON sebelum parsing
-                if (!res.ok) { // Jika status bukan 2xx (misalnya 400, 500)
-                    return res.json().then(errData => { throw errData; }); // Coba parse error JSON
+            .then((res) => { 
+                if (!res.ok) { 
+                    return res.json().then(errData => { throw errData; }); 
                 }
-                return res.json(); // Jika OK, parse JSON sukses
+                return res.json(); 
             })
             .then((data) => {
-                // 'data.message' berisi pesan dari controller
-                // 'data.success' adalah boolean dari controller
-                if (data.success) { // Cek flag 'success' dari respons JSON
+                
+                if (data.success) {
                     Swal.fire({
                         icon: 'success',
                         title: 'Checkout Berhasil',
                         text: data.message,
                     });
 
-                    // Kosongkan keranjang belanja di UI
                     document.getElementById('cart-items').innerHTML = '';
                     document.getElementById('total-price').textContent = 'Rp 0';
 
-                    // Reload halaman untuk memperbarui stok obat dan daftar riwayat penjualan dari server
+                    
                     location.reload();
 
-                } else { // Jika data.success adalah false
+                } else {
                     Swal.fire({
                         icon: 'error',
                         title: 'Checkout Gagal',
-                        text: data.message || 'Terjadi kesalahan yang tidak diketahui.', // Fallback message
+                        text: data.message || 'Terjadi kesalahan yang tidak diketahui.', 
                     });
                 }
             })
             .catch((error) => {
                 console.error('Fetch error:', error);
                 let errorMessage = 'Terjadi kesalahan saat checkout. Silakan coba lagi.';
-                if (error && error.message) { // Jika error adalah objek dengan properti message (dari throw errData atau network error)
+                if (error && error.message) { 
                     errorMessage = error.message;
                 }
                 Swal.fire({
@@ -228,7 +231,7 @@
             });
         });
 
-        // Filter pencarian obat
+        
         document.getElementById('search-medicine').addEventListener('input', function () {
             const filter = this.value.toLowerCase();
             document.querySelectorAll('.medicine-row').forEach(row => {
