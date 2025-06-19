@@ -20,6 +20,7 @@
         <a href="/master_data" class="font-bold underline ">Master Data</a>
         <a href="/perhitungan" class="hover:underline">Pembelian</a>
         <a href="/penjualan" class="hover:underline">Kasir</a>
+        <a href="/karyawan" class="hover:underline">Karyawan</a>
     </div>
 </nav>
 
@@ -89,7 +90,7 @@
     </div>
 
     <!-- Tabel Daftar Obat -->
-    <div class="overflow-x-auto">
+    <div class="overflow-y-auto max-h-80">
         <table class="w-full border-collapse border border-gray-300">
             <thead>
                 <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
@@ -104,7 +105,7 @@
                     <th class="py-3 px-6 text-center">Aksi</th>
                 </tr>
             </thead>
-            <tbody id="tabelObat" class="text-gray-700 text-sm">
+            <tbody id="tabelObat" class="text-gray-700 text-sm ">
                 @forelse($data_obats as $obat)
                     <tr id="row-{{ $obat->id }}" class="border-b border-gray-200 hover:bg-gray-100">
                         <td class="py-3 px-6 text-left">{{ \Carbon\Carbon::parse($obat->tanggal)->format('d/m/Y') }}</td>

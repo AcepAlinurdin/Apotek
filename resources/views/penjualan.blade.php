@@ -15,6 +15,7 @@
     <a href="/master_data" class="hover:underline">Master Data</a>
     <a href="/perhitungan" class="hover:underline">Pembelian</a>
     <a href="/penjualan" class="font-bold underline">Kasir</a>
+    <a href="/karyawan" class="hover:underline">Karyawan</a>
   </div>
 </nav>
 
@@ -40,15 +41,16 @@
                         <tr class="medicine-row " data-name="{{ $obat->nama_obat }}">
                             <td class="p-2 text-start">{{ $obat->nama_obat }}</td>
                             <td class="p-2 text-center">Rp {{ number_format($obat->harga_satuan, 0, ',', '.') }}</td>
-                            <td class="p-2 text-center">{{ $obat->qty }}</td>
+                            {{-- PERBAIKAN: Menampilkan total_stok hasil agregasi --}}
+                            <td class="p-2 text-center">{{ $obat->total_stok }}</td> 
                             <td class="p-2 text-center">
                                 <button
                                     class="add-btn bg-green-500 text-white px-3 py-1 rounded hover:bg-green-300 text-sm"
                                     data-name="{{ $obat->nama_obat }}"
                                     data-price="{{ $obat->harga_satuan }}"
-                                    {{ $obat->qty <= 0 ? 'disabled' : '' }}
+                                    {{ $obat->total_stok <= 0 ? 'disabled' : '' }}
                                 >
-                                    {{ $obat->qty <= 0 ? 'Stok Habis' : 'Tambahkan' }}
+                                    {{ $obat->total_stok <= 0 ? 'Stok Habis' : 'Tambahkan' }}
                                 </button>
                             </td>
                         </tr>
@@ -82,10 +84,10 @@
         </div>
     </div>
 
-   
+    
 <div class="bg-white p-4 rounded-xl shadow mt-6">
     <h2 class="text-lg font-bold mb-2">Riwayat Penjualan</h2>
-   
+    
     <table class="w-full border-collapse text-center">
         <thead class="sticky top-0 bg-gray-200 z-10"> 
             <tr>

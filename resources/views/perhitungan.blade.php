@@ -13,15 +13,15 @@
     <a href="/master_data" class="hover:underline">Master Data</a>
     <a href="/perhitungan" class="font-bold underline">Pembelian</a>
     <a href="/penjualan" class="hover:underline">Kasir</a>
+    <a href="/karyawan" class="hover:underline">Karyawan</a>
   </div>
 </nav>
 <div class="max-w-7xl mx-auto bg-white p-8 rounded-lg shadow-xl">
     <h1 class="text-3xl font-bold mb-6 text-gray-800 border-b pb-4">Laporan Komprehensif Stok & Peramalan</h1>
 
-    <!-- Tabel 1: Hasil Peramalan Otomatis -->
     <div class="mb-12">
-        <h2 class="text-2xl font-semibold mb-4 text-blue-800">1. Hasil Peramalan Otomatis (untuk Stok < 20)</h2>
-        <div class="overflow-x-auto">
+        <h2 class="text-2xl font-semibold mb-4 text-blue-800">1. Hasil Perhitungan</h2>
+        <div class="overflow-y-auto max-h-80">
             <table class="w-full border-collapse border border-blue-300">
                 <thead>
                     <tr class="bg-blue-600 text-white uppercase text-sm leading-normal">
@@ -60,7 +60,7 @@
     <!-- Tabel 2: Rekapitulasi Stok Kurang dari 20 -->
     <div class="mb-12">
         <h2 class="text-2xl font-semibold mb-4 text-red-600">2. Rekapitulasi Obat dengan Stok Kritis (< 20)</h2>
-        <div class="overflow-x-auto">
+        <div class="overflow-y-auto max-h-80">
             <table class="w-full border-collapse border border-red-300">
                 <thead>
                     <tr class="bg-red-200 text-red-800 uppercase text-sm leading-normal">
@@ -93,7 +93,7 @@
     <!-- Tabel 3: Daftar Semua Obat -->
     <div class="mb-12">
         <h2 class="text-2xl font-semibold mb-4 text-gray-700">3. Daftar Keseluruhan Obat</h2>
-        <div class="overflow-x-auto">
+        <div class="overflow-y-auto max-h-80">
             <table class="w-full border-collapse border border-gray-300">
                 <thead>
                     <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">

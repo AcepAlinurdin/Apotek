@@ -54,8 +54,8 @@ Route::middleware([
 });
 
 
-Route::get('/tambah-obat', function () {
-    return view('tambah');
+Route::get('/karyawan', function () {
+    return view('karyawan');
 });
 
 Route::post('/tambah-obat', function (Request $request) {
