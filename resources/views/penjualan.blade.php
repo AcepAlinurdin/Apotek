@@ -14,7 +14,8 @@
   <div class="space-x-4">
     <a href="/master_data" class="hover:underline">Master Data</a>
     <a href="/perhitungan" class="hover:underline">Pembelian</a>
-    <a href="/penjualan" class="font-bold underline">Kasir</a>
+    <a href="/penjualan" class="font-bold underline">Transaksi</a>
+    <a href="/cek" class="hover:underline">Pengecekan stok</a>
     <a href="/karyawan" class="hover:underline">Karyawan</a>
   </div>
 </nav>

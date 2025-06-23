@@ -19,7 +19,8 @@
         {{-- PERBAIKAN: Menggunakan URL langsung untuk semua link navigasi --}}
         <a href="/master_data" class="font-bold underline ">Master Data</a>
         <a href="/perhitungan" class="hover:underline">Pembelian</a>
-        <a href="/penjualan" class="hover:underline">Kasir</a>
+        <a href="/penjualan" class="hover:underline">Transaksi</a>
+        <a href="/cek" class="hover:underline">Pengecekan stok</a>
         <a href="/karyawan" class="hover:underline">Karyawan</a>
     </div>
 </nav>

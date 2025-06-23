@@ -13,9 +13,10 @@
   <nav class="bg-green-700 text-white p-4 rounded-xl mb-6 flex justify-between items-center shadow-md">
       <h1 class="text-xl font-bold">Apotek Parakan Muncang</h1>
       <div class="space-x-4">
-        <a href="/master-data" class="hover:underline">Master Data</a>
+        <a href="/master_data" class="hover:underline">Master Data</a>
         <a href="/perhitungan" class="hover:underline">Pembelian</a>
-        <a href="/penjualan" class="hover:underline">Kasir</a>
+        <a href="/penjualan" class="hover:underline">Transaksi</a>
+        <a href="/cek" class="hover:underline">Pengecekan stok</a>
         <a href="#" class="font-bold underline">Karyawan</a>
       </div>
   </nav>

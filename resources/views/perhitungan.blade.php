@@ -12,7 +12,8 @@
   <div class="space-x-4">
     <a href="/master_data" class="hover:underline">Master Data</a>
     <a href="/perhitungan" class="font-bold underline">Pembelian</a>
-    <a href="/penjualan" class="hover:underline">Kasir</a>
+    <a href="/penjualan" class="hover:underline">Transaksi</a>
+    <a href="/cek" class="hover:underline">Pengecekan stok</a>
     <a href="/karyawan" class="hover:underline">Karyawan</a>
   </div>
 </nav>
@@ -58,72 +59,8 @@
     </div>
 
     <!-- Tabel 2: Rekapitulasi Stok Kurang dari 20 -->
-    <div class="mb-12">
-        <h2 class="text-2xl font-semibold mb-4 text-red-600">2. Rekapitulasi Obat dengan Stok Kritis (< 20)</h2>
-        <div class="overflow-y-auto max-h-80">
-            <table class="w-full border-collapse border border-red-300">
-                <thead>
-                    <tr class="bg-red-200 text-red-800 uppercase text-sm leading-normal">
-                        <th class="py-3 px-6 text-left">No</th>
-                        <th class="py-3 px-6 text-left">Tanggal Masuk/Update</th>
-                        <th class="py-3 px-6 text-left">Nama Obat</th>
-                        <th class="py-3 px-6 text-center">Sisa Stok</th>
-                        <th class="py-3 px-6 text-center">Total Penjualan</th>
-                    </tr>
-                </thead>
-                <tbody class="text-gray-700 text-sm">
-                     @forelse($stok_kurang as $obat)
-                        <tr class="border-b border-gray-200 hover:bg-red-50">
-                            <td class="py-3 px-6 text-left">{{ $loop->iteration }}</td>
-                            <td class="py-3 px-6 text-left">{{ \Carbon\Carbon::parse($obat->tanggal)->format('d/m/Y') }}</td>
-                            <td class="py-3 px-6 text-left font-medium">{{ $obat->nama_obat }}</td>
-                            <td class="py-3 px-6 text-center font-bold text-red-600">{{ $obat->qty }}</td>
-                            <td class="py-3 px-6 text-center font-semibold">{{ $obat->penjualan_sum_qty ?? 0 }}</td>
-                        </tr>
-                    @empty
-                        <tr class="border-b border-gray-200">
-                            <td colspan="5" class="text-center p-6 text-gray-500">Aman! Tidak ada obat dengan stok di bawah 20.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Tabel 3: Daftar Semua Obat -->
-    <div class="mb-12">
-        <h2 class="text-2xl font-semibold mb-4 text-gray-700">3. Daftar Keseluruhan Obat</h2>
-        <div class="overflow-y-auto max-h-80">
-            <table class="w-full border-collapse border border-gray-300">
-                <thead>
-                    <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
-                        <th class="py-3 px-6 text-left">No</th>
-                        <th class="py-3 px-6 text-left">Tanggal Masuk/Update</th>
-                        <th class="py-3 px-6 text-left">Nama Obat</th>
-                        <th class="py-3 px-6 text-center">Stok (qty)</th>
-                        <th class="py-3 px-6 text-center">Total Penjualan</th>
-                        <th class="py-3 px-6 text-right">Harga Satuan</th>
-                    </tr>
-                </thead>
-                <tbody class="text-gray-700 text-sm">
-                    @forelse($semua_obat as $obat)
-                        <tr class="border-b border-gray-200 hover:bg-gray-100">
-                            <td class="py-3 px-6 text-left">{{ $loop->iteration }}</td>
-                            <td class="py-3 px-6 text-left">{{ \Carbon\Carbon::parse($obat->tanggal)->format('d/m/Y') }}</td>
-                            <td class="py-3 px-6 text-left font-medium">{{ $obat->nama_obat }}</td>
-                            <td class="py-3 px-6 text-center font-bold @if($obat->qty < 20) text-red-600 @endif">{{ $obat->qty }}</td>
-                            <td class="py-3 px-6 text-center font-semibold">{{ $obat->penjualan_sum_qty ?? 0 }}</td>
-                            <td class="py-3 px-6 text-right">Rp {{ number_format($obat->harga_satuan, 0, ',', '.') }}</td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="6" class="text-center p-4">Tidak ada data obat di database.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </div>
+   
+    
 
 </div>
 

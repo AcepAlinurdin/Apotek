@@ -175,16 +175,23 @@ class ObatController extends Controller
         $obat->delete();
         return response()->json(['success' => true, 'message' => 'Data obat berhasil dihapus.']);
     }
+    //  public function showCekPage()
+    // {
+    //     $data = $this->getRekapStokData();
+    //     return view('cek_stok', $data); // Menggunakan view 'cek.blade.php'
+    // }
     
     // =================================================================
     // == FUNGSI UNTUK HALAMAN PERHITUNGAN FUZZY ==
     // =================================================================
+    
     
     public function showRekapStok()
     {
         $semua_obat = DataObat::withSum('penjualan', 'qty')->orderBy('nama_obat', 'asc')->get();
         $stok_kurang = DataObat::withSum('penjualan', 'qty')->where('qty', '<', 20)->orderBy('qty', 'asc')->get();
         $hasilPeramalan = [];
+        
 
         foreach ($stok_kurang as $obat) {
             $tanggalPenjualanTerakhir = PenjualanObat::where('obat_id', $obat->id)->max('tanggal');
@@ -208,7 +215,41 @@ class ObatController extends Controller
                 'rekomendasi_pembelian' => round($rekomendasi)
             ];
         }
-        return view('perhitungan', compact('semua_obat', 'stok_kurang', 'hasilPeramalan'));
+        return view('perhitungan', compact('hasilPeramalan'));
+
+    }
+
+     public function showStok()
+    {
+        $semua_obat = DataObat::withSum('penjualan', 'qty')->orderBy('nama_obat', 'asc')->get();
+        $stok_kurang = DataObat::withSum('penjualan', 'qty')->where('qty', '<', 20)->orderBy('qty', 'asc')->get();
+        $hasilPeramalan = [];
+        
+
+        foreach ($stok_kurang as $obat) {
+            $tanggalPenjualanTerakhir = PenjualanObat::where('obat_id', $obat->id)->max('tanggal');
+            $inputPenjualan = 0;
+
+            if ($tanggalPenjualanTerakhir) {
+                $inputPenjualan = PenjualanObat::where('obat_id', $obat->id)
+                                                ->whereDate('tanggal', $tanggalPenjualanTerakhir)
+                                                ->sum('qty');
+            }
+
+            $inputStok = $obat->qty;
+            $rekomendasi = $this->jalankanMesinFuzzy($inputPenjualan, $inputStok);
+            
+            $hasilPeramalan[] = [
+                'nama_obat' => $obat->nama_obat,
+                'kategori' => $obat->kategori,
+                'stok_saat_ini' => $inputStok,
+                'penjualan_terakhir_input' => $inputPenjualan,
+                'total_penjualan' => $obat->penjualan_sum_qty ?? 0,
+                'rekomendasi_pembelian' => round($rekomendasi)
+            ];
+        }
+        return view('cek_stok', compact('semua_obat', 'stok_kurang'));
+
     }
 
     private function jalankanMesinFuzzy($penjualan, $stok) {

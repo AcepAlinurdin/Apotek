@@ -31,11 +31,17 @@ Route::put('/master_data/{id}', [ObatController::class, 'masterUpdate'])->name('
 Route::delete('/master_data/{id}', [ObatController::class, 'masterDestroy'])->name('obat.master.destroy');
 
 
+
+Route::get('/cek', [ObatController::class, 'showStok'])->name('obat.rekap');
+
 // Rute untuk menampilkan halaman daftar obat (indeks)
 Route::get('/penjualan', [ObatController::class, 'index']);
 Route::post('/checkout', [ObatController::class, 'checkout'])->name('checkout');
 Route::get('/perhitungan', [ObatController::class, 'showRekapStok'])->name('obat.rekap');
 Route::get('/peramalan', [ObatController::class, 'hitungPeramalan'])->name('obat.peramalan');
+
+Route::get('/perhitungan', [ObatController::class, 'showRekapStok'])->name('obat.rekap');
+Route::get('/', [ObatController::class, 'hitungPeramalan'])->name('obat.peramalan');
 
 Route::get('/data-obat', function () {
     $obat = DataObat::all();
