@@ -11,7 +11,7 @@
 </head>
 
 <body class="bg-gray-100 p-8">
-    <nav class="bg-green-700 text-white p-4 rounded-xl mb-4 flex justify-between items-center">
+    <!-- <nav class="bg-green-700 text-white p-4 rounded-xl mb-4 flex justify-between items-center">
         <div class="space-x-4">
             <a href="/master_data" class="hover:underline">Master Data</a>
             <a href="/penjualan" class="font-bold underline">Transaksi</a>
@@ -19,7 +19,7 @@
             <a href="/perhitungan" class="hover:underline">Pembelian</a>
         </div>
         <h1 class="text-xl font-bold">Apotek Parakan Muncang</h1>
-    </nav>
+    </nav> -->
     <div class="grid grid-cols-2 gap-6">
         {{-- Daftar Obat --}}
         <div class="bg-white p-4 rounded-xl shadow">

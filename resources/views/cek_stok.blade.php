@@ -7,16 +7,44 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 p-8">
-<nav class="bg-green-700 text-white p-4 rounded-xl mb-4 flex justify-between items-center">
-  
-  <div class="space-x-4">
-    
-      <a href="/master_data" class="hover:underline">Master Data</a>
-      <a href="/penjualan" class="hover:underline">Transaksi</a>
-      <a href="/cek" class="font-bold underline">Pengecekan stok</a>
-    <a href="/perhitungan" class="hover:underline">Pembelian</a>
-  </div>
-  <h1 class="text-xl font-bold">Apotek Parakan Muncang</h1>
+<nav class="bg-green-700 text-white p-4 rounded-xl mb-4 flex justify-between items-center shadow-md">
+    <div class="space-x-4">
+        {{-- Menu Master Data: Hanya untuk Admin & Kepala Apotek --}}
+        @hasanyrole('admin|kepala apotek')
+            <a href="{{ route('obat.master.index') }}" 
+               class="{{ request()->routeIs('obat.master.index') ? 'font-bold underline' : 'hover:underline' }}">
+               Master Data
+            </a>
+        @endhasanyrole
+
+        {{-- Menu Transaksi: Bisa diakses semua role --}}
+        <a href="{{ route('penjualan.index') }}" 
+           class="{{ request()->routeIs('penjualan.index') ? 'font-bold underline' : 'hover:underline' }}">
+           Transaksi
+        </a>
+
+        {{-- Menu Pengecekan Stok: Bisa diakses semua role --}}
+        <a href="{{ route('obat.stok') }}" 
+           class="{{ request()->routeIs('obat.stok') ? 'font-bold underline' : 'hover:underline' }}">
+           Pengecekan stok
+        </a>
+
+        {{-- Menu Pembelian: Bisa diakses semua role --}}
+        <a href="{{ route('obat.rekap') }}" 
+           class="{{ request()->routeIs('obat.rekap') ? 'font-bold underline' : 'hover:underline' }}">
+           Pembelian
+        </a>
+
+        {{-- Menu Tambah Pengguna: Hanya untuk Admin --}}
+        @role('admin')
+            <a href="{{ route('users.create') }}" 
+               class="{{ request()->routeIs('users.create') ? 'font-bold underline' : 'hover:underline' }}">
+               Tambah Pengguna
+            </a>
+        @endrole
+    </div>
+
+    <h1 class="text-xl font-bold">Apotek Parakan Muncang</h1>
 </nav>
 <div class=" mx-auto bg-white p-8 rounded-lg shadow-xl">
     <h1 class="text-3xl font-bold mb-6 text-gray-800 border-b pb-4">Monitoring Stok </h1>

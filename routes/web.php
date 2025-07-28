@@ -1,81 +1,71 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Models\DataObat;
-use Illuminate\Http\Request;
 use App\Http\Controllers\ObatController;
-use App\Http\Controllers\master_dataController;
+// Pastikan Anda membuat UserController jika belum ada
+// use App\Http\Controllers\UserController; 
 
 /*
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
 |
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
+| Di sini Anda mendaftarkan rute untuk aplikasi web Anda.
 |
 */
 
+// Rute untuk Halaman Depan (bisa diakses siapa saja)
 Route::get('/', function () {
     return view('welcome');
 });
-// Route::get('/perhitungan', function () {
-//     return view('perhitungan');
-// });
 
-// Route untuk menampilkan halaman master data obat
-Route::get('/master_data', [ObatController::class, 'masterIndex'])->name('obat.master.index');
-Route::post('/master_data', [ObatController::class, 'masterStore'])->name('obat.master.store');
-Route::put('/master_data/{id}', [ObatController::class, 'masterUpdate'])->name('obat.master.update');
-Route::delete('/master_data/{id}', [ObatController::class, 'masterDestroy'])->name('obat.master.destroy');
-
-
-
-Route::get('/cek', [ObatController::class, 'showStok'])->name('obat.rekap');
-
-// Rute untuk menampilkan halaman daftar obat (indeks)
-Route::get('/penjualan', [ObatController::class, 'index']);
-Route::post('/checkout', [ObatController::class, 'checkout'])->name('checkout');
-Route::get('/perhitungan', [ObatController::class, 'showRekapStok'])->name('obat.rekap');
-Route::get('/peramalan', [ObatController::class, 'hitungPeramalan'])->name('obat.peramalan');
-Route::get('/cek', [ObatController::class, 'showStok']);
-Route::get('/perhitungan', [ObatController::class, 'showRekapStok'])->name('obat.rekap');
-Route::get('/', [ObatController::class, 'hitungPeramalan'])->name('obat.peramalan');
-
-Route::get('/data-obat', function () {
-    $obat = DataObat::all();
-    return view('obat', compact('obat'));
-});
-
-
+// Grup Rute yang MEMBUTUHKAN LOGIN
+// Semua rute operasional apotek kita letakkan di sini
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {
+
+    // Dashboard (Bisa diakses semua role yang login)
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
+
+    // --- RUTE UNTUK SEMUA ROLE (ADMIN, KEPALA APOTEK, APOTEKER) ---
+    Route::get('/penjualan', [ObatController::class, 'index'])->name('penjualan.index');
+    Route::post('/checkout', [ObatController::class, 'checkout'])->name('checkout');
+    Route::get('/perhitungan', [ObatController::class, 'showRekapStok'])->name('obat.rekap');
+    Route::get('/peramalan', [ObatController::class, 'hitungPeramalan'])->name('obat.peramalan');
+    Route::get('/cek', [ObatController::class, 'showStok'])->name('obat.stok');
+
+Route::middleware(['role:admin'])->group(function () {
+    // Route ini akan otomatis membuat route untuk index, create, store, edit, update, destroy
+    Route::resource('users', App\Http\Controllers\UserController::class);
+    // Ganti route karyawan lama Anda dengan ini
+});
+
+    // --- RUTE KHUSUS UNTUK ADMIN & KEPALA APOTEK ---
+    // Apoteker tidak akan bisa mengakses rute di dalam grup ini
+    Route::middleware(['role:admin|kepala apotek'])->group(function () {
+        Route::get('/master_data', [ObatController::class, 'masterIndex'])->name('obat.master.index');
+        Route::post('/master_data', [ObatController::class, 'masterStore'])->name('obat.master.store');
+        Route::put('/master_data/{id}', [ObatController::class, 'masterUpdate'])->name('obat.master.update');
+        Route::delete('/master_data/{id}', [ObatController::class, 'masterDestroy'])->name('obat.master.destroy');
+    });
+
+
+    // --- RUTE KHUSUS UNTUK ADMIN ---
+    // Hanya admin yang bisa mengelola pengguna/karyawan
+        // --- RUTE KHUSUS UNTUK ADMIN ---
+// Hanya admin yang bisa mengelola pengguna/karyawan
+Route::middleware(['role:admin'])->group(function () {
+    Route::resource('users', App\Http\Controllers\UserController::class);
+});
+
 });
 
 
-Route::get('/karyawan', function () {
-    return view('karyawan');
-});
-
-Route::post('/tambah-obat', function (Request $request) {
-    $request->validate([
-        'nama_obat' => 'required|unique:data_obat,nama_obat|max:100',
-        'harga' => 'required|numeric|min:1',
-        'stok' => 'required|integer|min:0',
-    ]);
-
-    DataObat::create([
-        'nama_obat' => $request->nama_obat,
-        'harga' => $request->harga,
-        'stok' => $request->stok,
-    ]);
-
-    return redirect('/data-obat')->with('success', 'Obat berhasil ditambahkan');
-});
+// Rute-rute lama yang tidak terpakai atau sudah dipindahkan bisa dihapus.
+// Contohnya seperti Route::get('/data-obat', ...) dan Route::post('/tambah-obat', ...)
+// karena fungsionalitasnya sudah di-handle oleh /master_data.
