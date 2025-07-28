@@ -8,17 +8,18 @@
 </head>
 <body class="bg-gray-100 p-8">
 <nav class="bg-green-700 text-white p-4 rounded-xl mb-4 flex justify-between items-center">
-  <h1 class="text-xl font-bold">Apotek Parakan Muncang</h1>
+  
   <div class="space-x-4">
-    <a href="/master_data" class="hover:underline">Master Data</a>
+    
+      <a href="/master_data" class="hover:underline">Master Data</a>
+      <a href="/penjualan" class="hover:underline">Transaksi</a>
+      <a href="/cek" class="font-bold underline">Pengecekan stok</a>
     <a href="/perhitungan" class="hover:underline">Pembelian</a>
-    <a href="/penjualan" class="hover:underline">Transaksi</a>
-    <a href="/cek" class="font-bold underline">Pengecekan stok</a>
-    <a href="/karyawan" class="hover:underline">Karyawan</a>
   </div>
+  <h1 class="text-xl font-bold">Apotek Parakan Muncang</h1>
 </nav>
-<div class="max-w-7xl mx-auto bg-white p-8 rounded-lg shadow-xl">
-    <h1 class="text-3xl font-bold mb-6 text-gray-800 border-b pb-4">Laporan Komprehensif Stok & Peramalan</h1>
+<div class=" mx-auto bg-white p-8 rounded-lg shadow-xl">
+    <h1 class="text-3xl font-bold mb-6 text-gray-800 border-b pb-4">Monitoring Stok </h1>
 
    
 

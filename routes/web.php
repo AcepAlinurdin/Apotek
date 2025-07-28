@@ -39,7 +39,7 @@ Route::get('/penjualan', [ObatController::class, 'index']);
 Route::post('/checkout', [ObatController::class, 'checkout'])->name('checkout');
 Route::get('/perhitungan', [ObatController::class, 'showRekapStok'])->name('obat.rekap');
 Route::get('/peramalan', [ObatController::class, 'hitungPeramalan'])->name('obat.peramalan');
-
+Route::get('/cek', [ObatController::class, 'showStok']);
 Route::get('/perhitungan', [ObatController::class, 'showRekapStok'])->name('obat.rekap');
 Route::get('/', [ObatController::class, 'hitungPeramalan'])->name('obat.peramalan');
 

@@ -7,25 +7,20 @@
     <title>Pengelolaan Obat - Master Data</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <style>
-    
-    </style>
 </head>
 <body class="bg-gray-100 p-8">
-
 <nav class="bg-green-700 text-white p-4 rounded-xl mb-4 flex justify-between items-center shadow-md">
-    <h1 class="text-xl font-bold">Apotek Parakan Muncang</h1>
     <div class="space-x-4">
-        {{-- PERBAIKAN: Menggunakan URL langsung untuk semua link navigasi --}}
-        <a href="/master_data" class="font-bold underline ">Master Data</a>
-        <a href="/perhitungan" class="hover:underline">Pembelian</a>
+        <a href="/master_data" class="font-bold underline">Master Data</a>
         <a href="/penjualan" class="hover:underline">Transaksi</a>
         <a href="/cek" class="hover:underline">Pengecekan stok</a>
-        <a href="/karyawan" class="hover:underline">Karyawan</a>
+        <a href="/perhitungan" class="hover:underline">Pembelian</a>
     </div>
+
+    <h1 class="text-xl font-bold">Apotek Parakan Muncang</h1>
 </nav>
 
-<div class="max-w-7xl mx-auto bg-white p-8 rounded-lg shadow-xl">
+<div class=" mx-auto bg-white p-8 rounded-lg shadow-xl">
     <h1 class="text-3xl font-bold mb-6 text-gray-800 border-b pb-4">Pengelolaan Data Obat</h1>
 
     <!-- Form Tambah / Edit Obat -->
@@ -38,10 +33,10 @@
                     <label for="tanggal" class="block text-sm font-medium text-gray-700">Tanggal</label>
                     <input id="tanggal" name="tanggal" type="date" class="mt-1 border p-2 rounded-md w-full" required>
                 </div>
-                <div class="md:col-span-1">
+                <!-- <div class="md:col-span-1">
                     <label for="kode_obat" class="block text-sm font-medium text-gray-700">Kode Obat</label>
                     <input id="kode_obat" name="kode_obat" type="text" placeholder="Contoh: PM001" class="mt-1 border p-2 rounded-md w-full" required>
-                </div>
+                </div> -->
                 <div class="md:col-span-2">
                     <label for="nama_obat" class="block text-sm font-medium text-gray-700">Nama Obat</label>
                     <input id="nama_obat" name="nama_obat" type="text" placeholder="Nama Lengkap Obat" class="mt-1 border p-2 rounded-md w-full" required>
@@ -54,9 +49,9 @@
                      <label for="kategori" class="block text-sm font-medium text-gray-700">Kategori</label>
                      <select id="kategori" name="kategori" class="mt-1 border p-2 rounded-md w-full bg-white" required>
                         <option value="" disabled selected>-- Pilih Kategori --</option>
-                        <option value="Obat Bebas">Obat Bebas</option>
-                        <option value="Obat Bebas Terbatas">Obat Bebas Terbatas</option>
-                        <option value="Obat Keras">Obat Keras</option>
+                        <option value="Obat Bebas">Obat Luar</option>
+                        <option value="Obat Bebas Terbatas">Obat Makan/Minum</option>
+                        <!-- <option value="Obat Keras">Obat Keras</option> -->
                         <!-- <option value="Tablet">Tablet</option>
                         <option value="Sirup">Sirup</option>
                         <option value="Kapsul">Kapsul</option>
@@ -89,7 +84,28 @@
         </form>
         <div id="form-error" class="text-red-500 mt-2"></div>
     </div>
-
+<div class="mb-4 bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+    <form action="{{ url('/master_data') }}" method="GET" class="flex items-center space-x-2">
+        <input 
+            type="text" 
+            name="search" 
+            class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+            placeholder="Cari berdasarkan Nama atau Kode Obat..." 
+            value="{{ $searchTerm ?? '' }}">  {{-- Tampilkan kembali kata kunci yang sudah dicari --}}
+        
+        <button 
+            type="submit"
+            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+            Cari
+        </button>
+        
+        {{-- Tombol untuk menghapus filter/pencarian --}}
+        <a href="{{ url('/master_data') }}"
+           class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            Reset
+        </a>
+    </form>
+</div>
     <!-- Tabel Daftar Obat -->
     <div class="overflow-y-auto max-h-80">
         <table class="w-full border-collapse border border-gray-300">
