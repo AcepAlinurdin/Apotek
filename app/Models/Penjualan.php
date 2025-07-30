@@ -11,16 +11,27 @@ class Penjualan extends Model
 
     protected $fillable = [
         'pegawai_id',
+        'tanggal_penjualan',
         'total_harga',
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array
+     */
+    protected $casts = [
         'tanggal_penjualan' => 'datetime',
     ];
 
     /**
-     * Setiap penjualan dilayani oleh satu pegawai.
+     * [FIXED] Mendefinisikan relasi ke model User.
+     * Setiap penjualan dilayani oleh satu user.
+     * Foreign key-nya adalah 'pegawai_id'.
      */
-    public function pegawai()
+    public function user()
     {
-        return $this->belongsTo(Pegawai::class);
+        return $this->belongsTo(User::class, 'pegawai_id');
     }
 
     /**

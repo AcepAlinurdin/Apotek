@@ -30,7 +30,7 @@ class ObatController extends Controller
         $obats = Obat::orderBy('nama_obat', 'asc')->get();
 
         // [REFACTORED] Mengambil riwayat dari 'detail_penjualans' dan menyertakan data relasinya.
-        $riwayatPenjualans = DetailPenjualan::with(['obat', 'penjualan'])
+        $riwayatPenjualans = DetailPenjualan::with(['obat', 'penjualan.user'])
                                             ->orderBy('id', 'desc') // Mengurutkan berdasarkan ID (transaksi terbaru)
                                             ->take(20) // Ambil 20 transaksi terakhir saja agar tidak berat
                                             ->get();
@@ -78,7 +78,7 @@ class ObatController extends Controller
         // TODO: Ganti 'pegawai_id' dengan ID pegawai yang sedang login.
         // Untuk sementara, kita gunakan ID 1 sebagai contoh.
         $penjualan = Penjualan::create([
-            'pegawai_id' => 1, 
+            'pegawai_id' => auth()->id(), // Mengambil ID user yang terautentikasi
             'tanggal_penjualan' => now(),
             'total_harga' => $totalHargaKeseluruhan,
         ]);

@@ -2,22 +2,26 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
             <div class="flex">
+                <!-- [FIXED] Logo diganti dengan teks -->
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('dashboard') }}">
-                        <x-application-mark class="block h-9 w-auto" />
+                        <h1 class="text-lg font-bold text-gray-800">Apotek Parakan Muncang</h1>
                     </a>
                 </div>
 
+                <!-- Navigation Links (Desktop) -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
-                        {{ __('Dashboard') }}
-                    </x-nav-link>
+                    {{-- Urutan menu diubah sesuai permintaan --}}
+                    @hasanyrole('admin|kepala apotek')
+                        <x-nav-link href="{{ route('obat.master.index') }}" :active="request()->routeIs('obat.master.*')">
+                            {{ __('Master Data Obat') }}
+                        </x-nav-link>
+                    @endhasanyrole
 
                     <x-nav-link href="{{ route('penjualan.index') }}" :active="request()->routeIs('penjualan.index')">
                         {{ __('Penjualan') }}
                     </x-nav-link>
                     
-                    {{-- [START] LINK YANG DITAMBAHKAN --}}
                     <x-nav-link href="{{ route('obat.stok') }}" :active="request()->routeIs('obat.stok')">
                         {{ __('Pengecekan Stok') }}
                     </x-nav-link>
@@ -25,13 +29,6 @@
                     <x-nav-link href="{{ route('obat.rekap') }}" :active="request()->routeIs('obat.rekap')">
                         {{ __('Pembelian') }}
                     </x-nav-link>
-                    {{-- [END] LINK YANG DITAMBAHKAN --}}
-
-                    @hasanyrole('admin|kepala apotek')
-                        <x-nav-link href="{{ route('obat.master.index') }}" :active="request()->routeIs('obat.master.*')">
-                            {{ __('Master Data Obat') }}
-                        </x-nav-link>
-                    @endhasanyrole
 
                     @role('admin')
                         <x-nav-link href="{{ route('users.index') }}" :active="request()->routeIs('users.*')">
@@ -41,6 +38,7 @@
                 </div>
             </div>
 
+            <!-- Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <div class="ms-3 relative">
                     <x-dropdown align="right" width="48">
@@ -73,6 +71,7 @@
                 </div>
             </div>
 
+            <!-- Hamburger -->
             <div class="-me-2 flex items-center sm:hidden">
                 <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out">
                     <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
@@ -84,41 +83,47 @@
         </div>
     </div>
 
+    <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link href="{{ route('penjualan.index') }}" :active="request()->routeIs('penjualan.index')">
-                {{ __('Penjualan') }}
-            </x-responsive-nav-link>
 
-            {{-- [START] LINK YANG DITAMBAHKAN (MOBILE) --}}
-            <x-responsive-nav-link href="{{ route('obat.stok') }}" :active="request()->routeIs('obat.stok')">
-                {{ __('Pengecekan Stok') }}
-            </x-responsive-nav-link>
-            <x-responsive-nav-link href="{{ route('obat.rekap') }}" :active="request()->routeIs('obat.rekap')">
-                {{ __('Pembelian') }}
-            </x-responsive-nav-link>
-            {{-- [END] LINK YANG DITAMBAHKAN (MOBILE) --}}
-
+            {{-- Urutan menu diubah sesuai permintaan (Mobile) --}}
             @hasanyrole('admin|kepala apotek')
             <x-responsive-nav-link href="{{ route('obat.master.index') }}" :active="request()->routeIs('obat.master.*')">
                 {{ __('Master Data Obat') }}
             </x-responsive-nav-link>
             @endhasanyrole
-           @role('admin')
-    <x-responsive-nav-link href="{{ route('users.create') }}" :active="request()->routeIs('users.create')">
-        {{ __('Tambah Pengguna') }}
-    </x-responsive-nav-link>
-@endrole
+
+            <x-responsive-nav-link href="{{ route('penjualan.index') }}" :active="request()->routeIs('penjualan.index')">
+                {{ __('Penjualan') }}
+            </x-responsive-nav-link>
+
+            <x-responsive-nav-link href="{{ route('obat.stok') }}" :active="request()->routeIs('obat.stok')">
+                {{ __('Pengecekan Stok') }}
+            </x-responsive-nav-link>
+
+            <x-responsive-nav-link href="{{ route('obat.rekap') }}" :active="request()->routeIs('obat.rekap')">
+                {{ __('Pembelian') }}
+            </x-responsive-nav-link>
+
+            @role('admin')
+            <x-responsive-nav-link href="{{ route('users.index') }}" :active="request()->routeIs('users.*')">
+                {{ __('Kelola Pengguna') }}
+            </x-responsive-nav-link>
+            @endrole
         </div>
 
+        <!-- Responsive Settings Options -->
         <div class="pt-4 pb-1 border-t border-gray-200">
             <div class="flex items-center px-4">
-                <div class="shrink-0 me-3">
-                    <img class="h-10 w-10 rounded-full object-cover" src="{{ Auth::user()->profile_photo_url }}" alt="{{ Auth::user()->name }}" />
-                </div>
+                @if (Laravel\Jetstream\Jetstream::managesProfilePhotos())
+                    <div class="shrink-0 me-3">
+                        <img class="h-10 w-10 rounded-full object-cover" src="{{ Auth::user()->profile_photo_url }}" alt="{{ Auth::user()->name }}" />
+                    </div>
+                @endif
                 <div>
                     <div class="font-medium text-base text-gray-800">{{ Auth::user()->name }}</div>
                     <div class="font-medium text-sm text-gray-500">{{ Auth::user()->email }}</div>

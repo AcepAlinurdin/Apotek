@@ -32,16 +32,11 @@
                                     <td class="p-2 text-center">Rp {{ number_format($obat->harga_satuan, 0, ',', '.') }}</td>
                                     <td class="p-2 text-center">{{ $obat->stok }}</td>
                                     <td class="p-2 text-center">
-                                        {{-- [DEBUG] Mengubah teks tombol untuk menampilkan stok --}}
                                         <button
                                             class="add-btn bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 text-sm disabled:bg-gray-400"
                                             data-name="{{ $obat->nama_obat }}" data-price="{{ $obat->harga_satuan }}"
                                             {{ $obat->stok <= 0 ? 'disabled' : '' }}>
-                                            @if($obat->stok > 0)
-                                                Tambah
-                                            @else
-                                                Habis
-                                            @endif
+                                            {{ $obat->stok <= 0 ? 'Habis' : 'Tambah' }}
                                         </button>
                                     </td>
                                 </tr>
@@ -87,6 +82,7 @@
                                 <th class="p-2 text-left">Nama Obat</th>
                                 <th class="p-2 text-center">Jumlah</th>
                                 <th class="p-2 text-right">Subtotal</th>
+                                <th class="p-2 text-center">Aksi</th>
                             </tr>
                         </thead>
                         <tbody id="sales-history">
@@ -96,10 +92,22 @@
                                 <td class="p-2 text-left">{{ $detail->obat->nama_obat ?? 'Obat Dihapus' }}</td>
                                 <td class="p-2">{{ $detail->jumlah }}</td>
                                 <td class="p-2 text-right">Rp {{ number_format($detail->subtotal, 0, ',', '.') }}</td>
+                                <td class="p-2 text-center">
+                                    <button class="detail-btn bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-xs"
+                                        data-id-transaksi="{{ $detail->penjualan->id }}"
+                                        data-tanggal="{{ \Carbon\Carbon::parse($detail->penjualan->tanggal_penjualan)->isoFormat('dddd, D MMMM YYYY - HH:mm') }}"
+                                        data-pegawai="{{ $detail->penjualan->user->name ?? 'Data Pengguna Tidak Ditemukan' }}"
+                                        data-obat="{{ $detail->obat->nama_obat ?? 'Obat Dihapus' }}"
+                                        data-jumlah="{{ $detail->jumlah }}"
+                                        data-harga-satuan="{{ number_format($detail->harga_satuan, 0, ',', '.') }}"
+                                        data-subtotal="{{ number_format($detail->subtotal, 0, ',', '.') }}">
+                                        Detail
+                                    </button>
+                                </td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="4" class="p-2 text-center text-gray-500">Belum ada riwayat penjualan.</td>
+                                <td colspan="5" class="p-2 text-center text-gray-500">Belum ada riwayat penjualan.</td>
                             </tr>
                             @endforelse
                         </tbody>
@@ -110,11 +118,9 @@
     </div>
 @livewireScripts
     @push('scripts')
-    {{-- Memasukkan SweetAlert2 dan script khusus halaman ini --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // [FIXED] Mengambil token CSRF langsung dari Blade, bukan dari meta tag
             const csrfToken = '{{ csrf_token() }}';
             
             function updateTotalPrice() {
@@ -209,8 +215,38 @@
                     row.style.display = name.includes(filter) ? '' : 'none';
                 });
             });
+
+            document.getElementById('sales-history').addEventListener('click', function(event) {
+                if (event.target.classList.contains('detail-btn')) {
+                    const button = event.target;
+                    const data = button.dataset;
+
+                    const detailHtml = `
+                        <div class="text-left text-sm">
+                            <p class="mb-2"><strong>ID Transaksi:</strong> ${data.idTransaksi}</p>
+                            <p class="mb-2"><strong>Tanggal:</strong> ${data.tanggal}</p>
+                            <p class="mb-4"><strong>Dilayani oleh:</strong> ${data.pegawai}</p>
+                            <hr class="my-3">
+                            <p class="mb-2"><strong>Nama Obat:</strong> ${data.obat}</p>
+                            <p class="mb-2"><strong>Harga Satuan:</strong> Rp ${data.hargaSatuan}</p>
+                            <p class="mb-2"><strong>Jumlah:</strong> ${data.jumlah} unit</p>
+                            <hr class="my-3">
+                            <p class="text-lg"><strong>Subtotal:</strong> Rp ${data.subtotal}</p>
+                        </div>
+                    `;
+
+                    Swal.fire({
+                        title: '<strong>Detail Transaksi</strong>',
+                        icon: 'info',
+                        html: detailHtml,
+                        showCloseButton: true,
+                        focusConfirm: false,
+                        confirmButtonText: 'Tutup'
+                    });
+                }
+            });
         });
     </script>
     @endpush
-    @stack('scripts') 
+     @stack('scripts') 
 </x-app-layout>
