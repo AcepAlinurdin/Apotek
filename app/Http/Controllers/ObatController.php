@@ -2,109 +2,108 @@
 
 namespace App\Http\Controllers;
 
-// Menggabungkan semua 'use' yang dibutuhkan
-use App\Models\DataObat;
-use App\Models\PenjualanObat;
+// [REFACTORED] Menggunakan model-model baru sesuai struktur database
+use App\Models\Obat;
+use App\Models\Supplier;
+use App\Models\Penjualan;
+use App\Models\DetailPenjualan;
+use App\Models\Pegawai; // Asumsi Anda sudah membuat model ini
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Validator;
 
 class ObatController extends Controller
 {
     // =================================================================
-    // =========== LOGIKA UNTUK HALAMAN PENJUALAN / KASIR ==============
+    // =========== HALAMAN PENJUALAN / KASIR ==============
     // =================================================================
 
     /**
      * Menampilkan halaman utama penjualan (kasir).
-     * Mengambil daftar obat yang sudah dikelompokkan dan dijumlahkan stoknya,
-     * serta riwayat penjualan terakhir.
-     * Dipanggil oleh route GET /penjualan.
      */
     public function index()
     {
-        // Mengambil obat untuk ditampilkan di daftar pilihan,
-        // dengan mengelompokkan berdasarkan nama dan harga untuk menyatukan stok
-        $obats = DataObat::select(
-                'nama_obat',
-                'harga_satuan',
-                DB::raw('SUM(qty) as total_stok') // Menjumlahkan kolom qty sebagai total_stok
-            )
-            ->groupBy('nama_obat', 'harga_satuan') // Mengelompokkan berdasarkan nama dan harga
-            ->orderBy('nama_obat', 'asc')
-            ->get();
+        // [REFACTORED] Mengambil data dari tabel master 'obats'.
+        // Tidak perlu grouping lagi karena stok sudah terpusat.
+        $obats = Obat::orderBy('nama_obat', 'asc')->get();
 
-        // Mengambil riwayat penjualan untuk ditampilkan di tabel
-        $riwayatPenjualans = PenjualanObat::orderBy('tanggal', 'desc')
-                                        ->orderBy('created_at', 'desc')
-                                        ->get();
+        // [REFACTORED] Mengambil riwayat dari 'detail_penjualans' dan menyertakan data relasinya.
+        $riwayatPenjualans = DetailPenjualan::with(['obat', 'penjualan'])
+                                            ->orderBy('id', 'desc') // Mengurutkan berdasarkan ID (transaksi terbaru)
+                                            ->take(20) // Ambil 20 transaksi terakhir saja agar tidak berat
+                                            ->get();
 
         return view('penjualan2', compact('obats', 'riwayatPenjualans'));
     }
 
     /**
      * Memproses permintaan checkout dari kasir.
-     * Fungsi ini dipanggil oleh method checkout().
      */
     public function checkout(Request $request)
     {
-        // 1. Validasi input keranjang belanja (cart)
         $validated = $this->validateRequest($request);
-
-        // 2. Memulai transaksi database untuk memastikan semua proses berhasil
         DB::beginTransaction();
 
         try {
-            // 3. Memproses setiap item di keranjang
-            $result = $this->processCheckout($validated['cartItems']);
-
-            // 4. Jika berhasil, simpan semua perubahan ke database
+            // [REFACTORED] Logika checkout dirombak total untuk struktur header-detail
+            $this->processNewCheckout($validated['cartItems']);
+            
             DB::commit();
-            return response()->json(['success' => true, 'data' => $result, 'message' => 'Checkout berhasil']);
+            return response()->json(['success' => true, 'message' => 'Checkout berhasil']);
 
         } catch (\Exception $e) {
-            // 5. Jika terjadi error, batalkan semua perubahan dan kirim pesan error
             DB::rollBack();
             Log::error('Checkout error: '.$e->getMessage().' Stack: '.$e->getTraceAsString());
-            return response()->json(['success' => false, 'message' => 'Terjadi kesalahan saat checkout: ' . $e->getMessage()], 400);
+            return response()->json(['success' => false, 'message' => 'Terjadi kesalahan: ' . $e->getMessage()], 500);
         }
     }
 
     /**
-     * Logika inti untuk memproses setiap item dalam keranjang saat checkout.
-     * - Memvalidasi stok.
-     * - Membuat catatan penjualan.
-     * - Mengurangi stok obat.
+     * [REFACTORED] Logika inti baru untuk checkout dengan header-detail.
      */
-    protected function processCheckout(array $cartItems): array
+    protected function processNewCheckout(array $cartItems)
     {
-        $result = [];
+        // 1. Hitung total harga keseluruhan terlebih dahulu
+        $totalHargaKeseluruhan = 0;
         foreach ($cartItems as $item) {
-            // Mencari batch obat yang akan dikurangi stoknya
-            // Menggunakan firstOrFail() agar jika obat tidak ada, proses langsung gagal
-            $obat = DataObat::where('nama_obat', $item['name'])->firstOrFail();
+            $obat = Obat::where('nama_obat', $item['name'])->first();
+            if ($obat) {
+                $totalHargaKeseluruhan += $obat->harga_satuan * $item['quantity'];
+            }
+        }
+
+        // 2. Buat satu record di tabel 'penjualans' (header)
+        // TODO: Ganti 'pegawai_id' dengan ID pegawai yang sedang login.
+        // Untuk sementara, kita gunakan ID 1 sebagai contoh.
+        $penjualan = Penjualan::create([
+            'pegawai_id' => 1, 
+            'tanggal_penjualan' => now(),
+            'total_harga' => $totalHargaKeseluruhan,
+        ]);
+
+        // 3. Loop lagi untuk membuat record di 'detail_penjualans' dan mengurangi stok
+        foreach ($cartItems as $item) {
+            $obat = Obat::where('nama_obat', $item['name'])->firstOrFail();
 
             // Cek ketersediaan stok
-            if ($obat->qty < $item['quantity']) {
+            if ($obat->stok < $item['quantity']) {
                 throw new \Exception("Stok {$obat->nama_obat} tidak mencukupi.");
             }
 
-            // Buat record baru di tabel penjualan
-            $penjualan = PenjualanObat::create([
+            // Buat record detail penjualan
+            DetailPenjualan::create([
+                'penjualan_id' => $penjualan->id,
                 'obat_id' => $obat->id,
-                // 'kode_obat' => $obat->kode_obat,
-                'nama_obat' => $obat->nama_obat,
-                'qty' => $item['quantity'],
-                'total_harga' => $obat->harga_satuan * $item['quantity'],
-                'tanggal' => Carbon::now()
+                'jumlah' => $item['quantity'],
+                'harga_satuan' => $obat->harga_satuan, // Simpan harga saat transaksi
+                'subtotal' => $obat->harga_satuan * $item['quantity'],
             ]);
 
-            // Kurangi stok dari batch obat yang ditemukan
-            $obat->decrement('qty', $item['quantity']);
-            $result[] = $penjualan;
+            // Kurangi stok dari tabel master 'obats'
+            $obat->decrement('stok', $item['quantity']);
         }
-        return $result;
     }
 
     /**
@@ -114,247 +113,164 @@ class ObatController extends Controller
     {
         return $request->validate([
             'cartItems' => 'required|array|min:1',
-            'cartItems.*.name' => 'required|string|max:255',
+            'cartItems.*.name' => 'required|string|exists:obats,nama_obat',
             'cartItems.*.quantity' => 'required|integer|min:1'
         ]);
     }
 
 
     // =================================================================
-    // =========== LOGIKA UNTUK HALAMAN MASTER DATA (CRUD) =============
+    // =========== HALAMAN MASTER DATA (CRUD) =============
     // =================================================================
 
-    /**
-     * Menampilkan halaman utama master data dengan semua data obat. (READ)
-     */
-   // app/Http/Controllers/ObatController.php
-
-public function masterIndex(Request $request)
-{
-    $searchTerm = $request->input('search');
-    $query = DataObat::query();
-
-    if ($searchTerm) {
-        // ✅ PERBAIKAN: Hanya mencari berdasarkan nama_obat
-        $query->where('nama_obat', 'like', '%' . $searchTerm . '%');
-    }
-
-    $data_obats = $query->orderBy('nama_obat', 'asc')->get();
-    return view('master_data', compact('data_obats', 'searchTerm'));
-}
-
-public function masterStore(Request $request)
-{
-    $request->validate([
-        'tanggal'      => 'required|date',
-        'nama_obat'    => 'required|string|max:255',
-        'kategori'     => 'required|string|max:255',
-        'supplier'     => 'nullable|string|max:255',
-        'stok'         => 'required|integer|min:0',
-        'harga_satuan' => 'required|numeric|min:0',
-        'harga_box'    => 'required|numeric|min:0',
-    ]);
-
-    DataObat::create([
-        'tanggal'      => $request->tanggal,
-        'nama_obat'    => $request->nama_obat,
-        'kategori'     => $request->kategori,
-        'supplier'     => $request->supplier,
-        'qty'          => $request->stok,
-        'harga_satuan' => $request->harga_satuan,
-        'harga_box'    => $request->harga_box,
-    ]);
-
-    return response()->json(['success' => true, 'message' => 'Obat berhasil ditambahkan!']);
-}
-
-public function masterUpdate(Request $request, $id)
-{
-    $obat = DataObat::findOrFail($id);
-
-    $request->validate([
-        'tanggal'      => 'required|date',
-        'nama_obat'    => 'required|string|max:255',
-        'kategori'     => 'required|string|max:255',
-        'supplier'     => 'nullable|string|max:255',
-        'stok'         => 'required|integer|min:0',
-        'harga_satuan' => 'required|numeric|min:0',
-        'harga_box'    => 'required|numeric|min:0',
-    ]);
-
-    $obat->update([
-        'tanggal'      => $request->tanggal,
-        'nama_obat'    => $request->nama_obat,
-        'kategori'     => $request->kategori,
-        'supplier'     => $request->supplier,
-        'qty'          => $request->stok,
-        'harga_satuan' => $request->harga_satuan,
-        'harga_box'    => $request->harga_box,
-    ]);
-
-    return response()->json(['success' => true, 'message' => 'Data obat berhasil diperbarui.']);
-}
-    // =================================================================
-    // =========== LOGIKA UNTUK HALAMAN REKAP & PERAMALAN ==============
-    // =================================================================
-
-    /**
-     * Menampilkan halaman 'perhitungan' dengan hasil peramalan Fuzzy.
-     * Fungsi ini mengambil obat dengan stok kurang, menghitung input penjualan terakhir,
-     * dan menjalankan logika fuzzy untuk mendapatkan rekomendasi pembelian.
-     */
-    // public function showRekapStok()
-    // {
-    //     // Mengambil obat dengan stok kritis (kurang dari 20)
-    //     $stok_kurang = DataObat::withSum('penjualan', 'qty')
-    //                            ->where('qty', '<', 20)
-    //                            ->orderBy('qty', 'asc')
-    //                            ->get();
-
-    //     $hasilPeramalan = [];
-
-    //     foreach ($stok_kurang as $obat) {
-    //         // Cari tanggal penjualan terakhir untuk obat ini
-    //         $tanggalPenjualanTerakhir = PenjualanObat::where('obat_id', $obat->id)->max('tanggal');
-    //         $inputPenjualan = 0;
-
-    //         // Jika ada riwayat penjualan, hitung total penjualan pada hari terakhir itu
-    //         if ($tanggalPenjualanTerakhir) {
-    //             $inputPenjualan = PenjualanObat::where('obat_id', $obat->id)
-    //                                             ->whereDate('tanggal', $tanggalPenjualanTerakhir)
-    //                                             ->sum('qty');
-    //         }
-
-    //         // Ambil stok saat ini sebagai input
-    //         $inputStok = $obat->qty;
-            
-    //         // Jalankan mesin fuzzy untuk mendapatkan rekomendasi
-    //         $rekomendasi = $this->jalankanMesinFuzzy($inputPenjualan, $inputStok);
-
-    //         // Simpan hasil untuk ditampilkan di view
-    //         $hasilPeramalan[] = [
-    //             'nama_obat' => $obat->nama_obat,
-    //             'kategori' => $obat->kategori,
-    //             'stok_saat_ini' => $inputStok,
-    //             'penjualan_terakhir_input' => $inputPenjualan,
-    //             'total_penjualan' => $obat->penjualan_sum_qty ?? 0,
-    //             'rekomendasi_pembelian' => round($rekomendasi)
-    //         ];
-    //     }
-
-    //     return view('perhitungan', compact('hasilPeramalan'));
-    // }
-
-    // // =================================================================
-    // // ============ LOGIKA UNTUK HALAMAN CEK STOK KESELURUHAN ==========
-    // // =================================================================
-
-    // /**
-    //  * Menampilkan halaman 'cek_stok'.
-    //  * Menyajikan dua daftar: semua obat dan obat dengan stok kritis.
-    //  */
-   public function showStok()
+    public function masterIndex(Request $request)
     {
-        // Query untuk daftar semua obat tetap sama, tidak difilter
-        $semua_obat = DataObat::withSum('penjualan', 'qty')
-                              ->orderBy('nama_obat', 'asc')
-                              ->get();
-        
-        // ==========================================================
-        // =========== FILTER OTOMATIS DIMULAI DARI SINI ============
-        // ==========================================================
+        $searchTerm = $request->input('search');
+        // [REFACTORED] Menggunakan model Obat
+        $query = Obat::with('supplier'); // Eager load data supplier
 
-        // 1. Cari tanggal transaksi paling terakhir di database.
-        $tanggalTerakhir = PenjualanObat::max('tanggal');
-        
-        // 2. Siapkan variabel untuk menampung hasil query stok kritis.
-        $stok_kurang = collect(); // Defaultnya adalah koleksi kosong.
-
-        // 3. JIKA ada riwayat transaksi, jalankan filter.
-        if ($tanggalTerakhir) {
-            // Ambil tahun dan bulan dari tanggal terakhir tersebut.
-            $carbonDate = Carbon::parse($tanggalTerakhir);
-            $tahunTerakhir = $carbonDate->year;
-            $bulanTerakhir = $carbonDate->month;
-
-            // Jalankan query untuk mencari stok kritis YANG MEMILIKI
-            // riwayat penjualan pada bulan dan tahun terakhir.
-            $stok_kurang = DataObat::withSum('penjualan', 'qty')
-                // Kondisi utama: stok di bawah 20
-                ->where('qty', '<', 20)
-                // ✅ Kondisi filter tambahan:
-                // Hanya jika obat ini memiliki penjualan pada bulan & tahun terakhir.
-                ->whereHas('penjualan', function ($query) use ($tahunTerakhir, $bulanTerakhir) {
-                    $query->whereYear('tanggal', $tahunTerakhir)
-                          ->whereMonth('tanggal', '>', $bulanTerakhir - 2);
-                })
-                ->orderBy('qty', 'asc')
-                ->get();
+        if ($searchTerm) {
+            $query->where('nama_obat', 'like', '%' . $searchTerm . '%');
         }
 
-        // 4. Kirim kedua data ke view.
-        // Jika tidak ada transaksi, $stok_kurang akan menjadi kosong.
+        $data_obats = $query->orderBy('nama_obat', 'asc')->get();
+        return view('master_data', compact('data_obats', 'searchTerm'));
+    }
+
+    public function masterStore(Request $request)
+    {
+        // Gunakan Validator manual untuk kontrol penuh atas response
+        $validator = Validator::make($request->all(), [
+            'nama_obat'    => 'required|string|max:255|unique:obats,nama_obat',
+            'kategori'     => 'required|string|max:255',
+            'supplier'     => 'required|string|max:255',
+            'stok'         => 'required|integer|min:0',
+            'harga_satuan' => 'required|numeric|min:0',
+            'harga_box'    => 'nullable|numeric|min:0',
+        ]);
+
+        // Jika validasi gagal, kirim kembali error dalam format JSON
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+        }
+
+        // Cari atau buat supplier baru
+        $supplier = Supplier::firstOrCreate(['nama_supplier' => $request->supplier]);
+
+        // Buat data obat
+        Obat::create([
+            'supplier_id'  => $supplier->id,
+            'nama_obat'    => $request->nama_obat,
+            'kategori'     => $request->kategori,
+            'stok'         => $request->stok,
+            'harga_satuan' => $request->harga_satuan,
+            'harga_box'    => $request->harga_box,
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'Obat berhasil ditambahkan!']);
+    }
+
+    public function masterUpdate(Request $request, $id)
+    {
+        $obat = Obat::findOrFail($id);
+        
+        $validator = Validator::make($request->all(), [
+            // Pastikan validasi unique mengabaikan ID obat yang sedang diedit
+            'nama_obat'    => 'required|string|max:255|unique:obats,nama_obat,'.$id,
+            'kategori'     => 'required|string|max:255',
+            'supplier'     => 'required|string|max:255',
+            'stok'         => 'required|integer|min:0',
+            'harga_satuan' => 'required|numeric|min:0',
+            'harga_box'    => 'nullable|numeric|min:0',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+        }
+
+        $supplier = Supplier::firstOrCreate(['nama_supplier' => $request->supplier]);
+
+        $obat->update([
+            'supplier_id'  => $supplier->id,
+            'nama_obat'    => $request->nama_obat,
+            'kategori'     => $request->kategori,
+            'stok'         => $request->stok,
+            'harga_satuan' => $request->harga_satuan,
+            'harga_box'    => $request->harga_box,
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'Data obat berhasil diperbarui.']);
+    }
+    
+    public function masterDestroy($id)
+    {
+        $obat = Obat::findOrFail($id);
+        $obat->delete();
+        return response()->json(['success' => true, 'message' => 'Data obat berhasil dihapus.']);
+    }
+
+
+    // =================================================================
+    // =========== HALAMAN REKAP & PERAMALAN ==============
+    // =================================================================
+    
+    public function showRekapStok(Request $request)
+    {
+        $searchTerm = $request->input('search');
+        $query = Obat::where('stok', '<', 20);
+
+        if ($searchTerm) {
+            $query->where('nama_obat', 'like', '%' . $searchTerm . '%');
+        }
+
+        $stok_kurang = $query->with('supplier')->orderBy('stok', 'asc')->get();
+        $hasilPeramalan = [];
+
+        foreach ($stok_kurang as $obat) {
+            // [FIXED] Mengubah latest() menjadi orderBy('id', 'desc')
+            $detailPenjualanTerakhir = DetailPenjualan::where('obat_id', $obat->id)
+                                        ->orderBy('id', 'desc')
+                                        ->first();
+            
+            $inputPenjualan = 0;
+            if ($detailPenjualanTerakhir) {
+                // Pastikan 'use Carbon\Carbon;' ada di atas file
+$tanggalTerakhir = \Carbon\Carbon::parse($detailPenjualanTerakhir->penjualan->tanggal_penjualan);
+                $inputPenjualan = DetailPenjualan::where('obat_id', $obat->id)
+                                    ->whereHas('penjualan', function($q) use ($tanggalTerakhir) {
+                                        $q->whereDate('tanggal_penjualan', $tanggalTerakhir->toDateString());
+                                    })
+                                    ->sum('jumlah');
+            }
+
+            $inputStok = $obat->stok;
+            // $rekomendasi = $this->jalankanMesinFuzzy($inputPenjualan, $inputStok); // Fuzzy logic di-nonaktifkan sementara
+
+            $hasilPeramalan[] = [
+                'nama_obat' => $obat->nama_obat,
+                'supplier' => $obat->supplier->nama_supplier ?? 'N/A',
+                'kategori' => $obat->kategori,
+                'stok_saat_ini' => $inputStok,
+                'total_penjualan' => DetailPenjualan::where('obat_id', $obat->id)->sum('jumlah'),
+                'rekomendasi_pembelian' => 0, //round($rekomendasi), // Default 0
+                'harga_box' => $obat->harga_box,
+                'harga_pcs' => $obat->harga_satuan
+            ];
+        }
+
+        return view('perhitungan', compact('hasilPeramalan', 'searchTerm'));
+    }
+     public function showStok()
+    {
+        // Mengambil semua data obat, diurutkan berdasarkan nama
+        $semua_obat = Obat::with('supplier')->orderBy('nama_obat', 'asc')->get();
+        
+        // Mengambil data obat yang stoknya kritis (kurang dari 20), diurutkan dari yang paling sedikit
+        $stok_kurang = Obat::with('supplier')->where('stok', '<', 20)->orderBy('stok', 'asc')->get();
+
+        // Kirim kedua data ke view
         return view('cek_stok', compact('semua_obat', 'stok_kurang'));
     }
-
-// =================================================================
-    // =========== LOGIKA UNTUK HALAMAN REKAP & PERAMALAN ==============
-    // =================================================================
-
-    /**
-     * Menampilkan halaman 'perhitungan' dengan hasil peramalan Fuzzy.
-     * Fungsi ini mengambil obat dengan stok kurang, menghitung input,
-     * dan menjalankan logika fuzzy untuk mendapatkan rekomendasi pembelian.
-     */
-    public function showRekapStok(Request $request) // <-- Tambahkan Request $request
-{
-    // 1. Ambil kata kunci pencarian dari input user
-    $searchTerm = $request->input('search');
-
-    // 2. Ambil parameter fuzzy (logika ini tidak berubah)
-    $fuzzyParams = $this->getFuzzyParamsFromDB();
-
-    // 3. Bangun query dasar untuk obat stok kritis
-    $query = DataObat::withSum('penjualan', 'qty')->where('qty', '<', 20);
-
-    // 4. JIKA ada input pencarian, tambahkan filter WHERE
-    if ($searchTerm) {
-        // Cari berdasarkan nama obat yang cocok dengan kata kunci
-        $query->where('nama_obat', 'like', '%' . $searchTerm . '%');
-    }
-
-    // 5. Eksekusi query untuk mendapatkan daftar obat yang sudah difilter
-    $stok_kurang = $query->orderBy('qty', 'asc')->get();
-
-    // Proses peramalan fuzzy tetap sama, namun sekarang menggunakan
-    // data $stok_kurang yang mungkin sudah terfilter
-    $hasilPeramalan = [];
-    foreach ($stok_kurang as $obat) {
-        $tanggalPenjualanTerakhir = PenjualanObat::where('obat_id', $obat->id)->max('tanggal');
-        $inputPenjualan = 0;
-
-        if ($tanggalPenjualanTerakhir) {
-            $inputPenjualan = PenjualanObat::where('obat_id', $obat->id)
-                                          ->whereDate('tanggal', $tanggalPenjualanTerakhir)
-                                          ->sum('qty');
-        }
-
-        $inputStok = $obat->qty;
-        $rekomendasi = $this->jalankanMesinFuzzy($inputPenjualan, $inputStok, $fuzzyParams);
-
-        $hasilPeramalan[] = [
-            'nama_obat' => $obat->nama_obat,
-            'kategori' => $obat->kategori,
-            'stok_saat_ini' => $inputStok,
-            'penjualan_terakhir_input' => $inputPenjualan,
-            'total_penjualan' => $obat->penjualan_sum_qty ?? 0,
-            'rekomendasi_pembelian' => round($rekomendasi)
-        ];
-    }
-
-    // 6. Kirim hasil peramalan DAN kata kunci pencarian ke view
-    return view('perhitungan', compact('hasilPeramalan', 'searchTerm'));
-}
 
     // =================================================================
     // =============== MESIN INFERENSI FUZZY (MAMDANI) ===================

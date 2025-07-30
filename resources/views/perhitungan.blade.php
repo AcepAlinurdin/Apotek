@@ -1,20 +1,20 @@
 <x-app-layout>
-    {{-- Slot untuk header halaman --}}
+    {{-- Slot untuk judul halaman --}}
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             {{ __('Laporan Pembelian & Peramalan') }}
         </h2>
     </x-slot>
 
-    {{-- Konten utama halaman Anda dimulai di sini --}}
+    {{-- Konten utama halaman --}}
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
 
-                {{-- Mulai dari sini adalah konten yang sudah Anda buat sebelumnya --}}
+                {{-- Form Pencarian --}}
                 <div class="mb-6">
                     <h3 class="text-lg font-medium text-gray-800 mb-2">Cari Obat</h3>
-                    <form action="{{ url('/perhitungan') }}" method="GET" class="flex items-center space-x-2">
+                    <form action="{{ route('obat.rekap') }}" method="GET" class="flex items-center space-x-2">
                         <input type="text" name="search"
                             class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
                             placeholder="Ketik nama obat..." value="{{ $searchTerm ?? '' }}">
@@ -22,24 +22,25 @@
                             class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                             Cari
                         </button>
-                        <a href="{{ url('/perhitungan') }}"
+                        <a href="{{ route('obat.rekap') }}"
                             class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                             Reset
                         </a>
                     </form>
                 </div>
 
-                <h1 class="text-3xl font-bold mb-6 text-gray-800 border-b pb-4">Jumlah pembelian</h1>
+                <h1 class="text-3xl font-bold mb-6 text-gray-800 border-b pb-4">Rekomendasi Pembelian</h1>
 
+                {{-- Tabel 1: Hasil Perhitungan --}}
                 <div class="mb-12">
-                    <h2 class="text-2xl font-semibold mb-4 text-blue-800">1. Hasil Perhitungan</h2>
-                    <div class="overflow-y-auto max-h-80">
+                    <h2 class="text-2xl font-semibold mb-4 text-blue-800">1. Hasil Perhitungan Stok Kritis</h2>
+                    <div class="overflow-x-auto">
                         <table class="w-full border-collapse border border-blue-300">
                             <thead>
-                                <tr class="bg-blue-600 text-white uppercase text-sm leading-normal">
+                                <tr class="bg-blue-600 text-black uppercase text-sm leading-normal">
                                     <th class="py-3 px-6 text-left">No</th>
                                     <th class="py-3 px-6 text-left">Nama Obat</th>
-                                    <th class="py-3 px-6 text-center">Stok</th>
+                                    <th class="py-3 px-6 text-center">Stok Saat Ini</th>
                                     <th class="py-3 px-6 text-center">Total Penjualan</th>
                                     <th class="py-3 px-6 text-center font-bold">Rekomendasi Pembelian</th>
                                 </tr>
@@ -57,8 +58,8 @@
                                 </tr>
                                 @empty
                                 <tr class="border-b border-gray-200">
-                                    <td colspan="6" class="text-center p-6 text-gray-500">
-                                        Tidak ada obat yang perlu diramal (semua stok di atas atau sama dengan 20).
+                                    <td colspan="5" class="text-center p-6 text-gray-500">
+                                        Tidak ada obat yang perlu diramal (semua stok di atas ambang batas).
                                     </td>
                                 </tr>
                                 @endforelse
@@ -67,16 +68,17 @@
                     </div>
                 </div>
 
+                {{-- Tabel 2: Detail Pembelian --}}
                 <div class="mb-12">
-                    <h2 class="text-2xl font-semibold mb-4 text-green-800">2. Total Pembelian</h2>
-                    <div class="overflow-y-auto max-h-80">
+                    <h2 class="text-2xl font-semibold mb-4 text-green-800">2. Detail Obat untuk Pembelian</h2>
+                    <div class="overflow-x-auto">
                         <table class="w-full border-collapse border border-green-300">
                             <thead>
-                                <tr class="bg-green-600 text-white uppercase text-sm leading-normal">
+                                <tr class="bg-green-600 text-black uppercase text-sm leading-normal">
                                     <th class="py-3 px-6 text-left">No</th>
                                     <th class="py-3 px-6 text-left">Nama Obat</th>
                                     <th class="py-3 px-6 text-left">Supplier</th>
-                                    <th class="py-3 px-6 text-center">Total Pembelian</th>
+                                    <th class="py-3 px-6 text-center">Rekomendasi Beli</th>
                                     <th class="py-3 px-6 text-left">Kategori</th>
                                     <th class="py-3 px-6 text-right">Harga/Box</th>
                                     <th class="py-3 px-6 text-right">Harga/Pcs</th>

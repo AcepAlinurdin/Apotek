@@ -107,11 +107,11 @@
                 {{ __('Master Data Obat') }}
             </x-responsive-nav-link>
             @endhasanyrole
-            @role('admin')
-            <x-responsive-nav-link href="{{ route('users.index') }}" :active="request()->routeIs('users.*')">
-                {{ __('Kelola Pengguna') }}
-            </x-responsive-nav-link>
-            @endrole
+           @role('admin')
+    <x-responsive-nav-link href="{{ route('users.create') }}" :active="request()->routeIs('users.create')">
+        {{ __('Tambah Pengguna') }}
+    </x-responsive-nav-link>
+@endrole
         </div>
 
         <div class="pt-4 pb-1 border-t border-gray-200">

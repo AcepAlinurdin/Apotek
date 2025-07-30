@@ -1,97 +1,101 @@
 <x-app-layout>
-    {{-- Slot untuk judul halaman yang akan muncul di header --}}
+    {{-- Slot untuk judul halaman --}}
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             {{ __('Transaksi Penjualan') }}
         </h2>
     </x-slot>
 
-    {{-- Konten utama halaman Anda dimulai di sini --}}
+    {{-- Konten utama halaman --}}
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            {{-- Wrapper untuk konten agar sesuai dengan layout --}}
-            <div class="bg-gray-100">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-                {{-- Mulai dari sini adalah seluruh konten yang sudah Anda buat --}}
-                <div class="grid grid-cols-2 gap-6">
-                    {{-- Daftar Obat --}}
-                    <div class="bg-white p-4 rounded-xl shadow">
-                        <h2 class="text-lg font-bold mb-2">Daftar Obat</h2>
-                        <input type="text" id="search-medicine" placeholder="Cari obat..."
-                            class="w-full p-2 border rounded mb-3" />
-                        <div class="overflow-y-auto max-h-80">
-                            <table class="w-full border-collapse">
-                                <thead class="sticky top-0 bg-gray-200 z-10">
-                                    <tr>
-                                        <th class="p-2">Nama Obat</th>
-                                        <th class="p-2">Harga</th>
-                                        <th class="p-2">Stok</th>
-                                        <th class="p-2">Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="medicine-list">
-                                    @foreach($obats as $obat)
-                                    <tr class="medicine-row " data-name="{{ $obat->nama_obat }}">
-                                        <td class="p-2 text-start">{{ $obat->nama_obat }}</td>
-                                        <td class="p-2 text-center">Rp {{ number_format($obat->harga_satuan, 0, ',', '.') }}</td>
-                                        <td class="p-2 text-center">{{ $obat->total_stok }}</td>
-                                        <td class="p-2 text-center">
-                                            <button
-                                                class="add-btn bg-green-500 text-white px-3 py-1 rounded hover:bg-green-300 text-sm"
-                                                data-name="{{ $obat->nama_obat }}" data-price="{{ $obat->harga_satuan }}"
-                                                {{ $obat->total_stok <= 0 ? 'disabled' : '' }}>
-                                                {{ $obat->total_stok <= 0 ? 'Stok Habis' : 'Tambahkan' }}
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    {{-- Keranjang Belanja --}}
-                    <div class="bg-white p-4 rounded-xl shadow">
-                        <h2 class="text-lg font-bold mb-2">Keranjang Belanja</h2>
-                        <div class="overflow-y-auto max-h-72">
-                            <table class="w-full border-collapse text-center">
-                                <thead class="sticky top-0 bg-gray-200 z-10 ">
-                                    <tr>
-                                        <th class="p-2">Nama Obat</th>
-                                        <th class="p-2">Jumlah</th>
-                                        <th class="p-2">Total</th>
-                                        <th class="p-2">Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="cart-items"></tbody>
-                            </table>
-                        </div>
-                        <div class="mt-4 text-right">
-                            <strong>Total: <span id="total-price">Rp 0</span></strong>
-                        </div>
-                        <button id="checkout-btn"
-                            class="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white p-2 rounded">Checkout</button>
+                {{-- Kolom Kiri: Daftar Obat --}}
+                <div class="bg-white p-4 rounded-xl shadow">
+                    <h2 class="text-lg font-bold mb-2">Daftar Obat</h2>
+                    <input type="text" id="search-medicine" placeholder="Cari obat..." class="w-full p-2 border rounded mb-3" />
+                    <div class="overflow-y-auto max-h-96">
+                        <table class="w-full border-collapse">
+                            <thead class="sticky top-0 bg-gray-200 z-10">
+                                <tr>
+                                    <th class="p-2 text-left">Nama Obat</th>
+                                    <th class="p-2">Harga</th>
+                                    <th class="p-2">Stok</th>
+                                    <th class="p-2">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="medicine-list">
+                                @foreach($obats as $obat)
+                                <tr class="medicine-row" data-name="{{ $obat->nama_obat }}">
+                                    <td class="p-2 text-left">{{ $obat->nama_obat }}</td>
+                                    <td class="p-2 text-center">Rp {{ number_format($obat->harga_satuan, 0, ',', '.') }}</td>
+                                    <td class="p-2 text-center">{{ $obat->stok }}</td>
+                                    <td class="p-2 text-center">
+                                        {{-- [DEBUG] Mengubah teks tombol untuk menampilkan stok --}}
+                                        <button
+                                            class="add-btn bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 text-sm disabled:bg-gray-400"
+                                            data-name="{{ $obat->nama_obat }}" data-price="{{ $obat->harga_satuan }}"
+                                            {{ $obat->stok <= 0 ? 'disabled' : '' }}>
+                                            @if($obat->stok > 0)
+                                                Tambah
+                                            @else
+                                                Habis
+                                            @endif
+                                        </button>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
-                <div class="bg-white p-4 rounded-xl shadow mt-6">
-                    <h2 class="text-lg font-bold mb-2">Riwayat Penjualan</h2>
+                {{-- Kolom Kanan: Keranjang Belanja --}}
+                <div class="bg-white p-4 rounded-xl shadow">
+                    <h2 class="text-lg font-bold mb-2">Keranjang Belanja</h2>
+                    <div class="overflow-y-auto max-h-80">
+                        <table class="w-full border-collapse text-center">
+                            <thead class="sticky top-0 bg-gray-200 z-10">
+                                <tr>
+                                    <th class="p-2 text-left">Nama Obat</th>
+                                    <th class="p-2">Jumlah</th>
+                                    <th class="p-2 text-right">Total</th>
+                                    <th class="p-2">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cart-items">
+                                {{-- Item keranjang akan ditambahkan oleh JavaScript --}}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-4 text-right text-xl font-bold">
+                        Total: <span id="total-price">Rp 0</span>
+                    </div>
+                    <button id="checkout-btn" class="mt-4 w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600 font-semibold">Checkout</button>
+                </div>
+            </div>
+
+            {{-- Riwayat Penjualan di bawah --}}
+            <div class="bg-white p-4 rounded-xl shadow mt-6">
+                <h2 class="text-lg font-bold mb-2">20 Riwayat Penjualan Terakhir</h2>
+                <div class="overflow-x-auto">
                     <table class="w-full border-collapse text-center">
-                        <thead class="sticky top-0 bg-gray-200 z-10">
+                        <thead class="bg-gray-200 z-10">
                             <tr>
                                 <th class="p-2 text-center">Tanggal</th>
-                                <th class="p-2">Nama Obat</th>
+                                <th class="p-2 text-left">Nama Obat</th>
                                 <th class="p-2 text-center">Jumlah</th>
-                                <th class="p-2 text-center">Total Harga</th>
+                                <th class="p-2 text-right">Subtotal</th>
                             </tr>
                         </thead>
                         <tbody id="sales-history">
-                            @forelse($riwayatPenjualans as $penjualan)
+                            @forelse($riwayatPenjualans as $detail)
                             <tr>
-                                <td class="p-2">{{ \Carbon\Carbon::parse($penjualan->tanggal)->format('d-m-Y') }}</td>
-                                <td class="p-2">{{ $penjualan->nama_obat }}</td>
-                                <td class="p-2">{{ $penjualan->qty }}</td>
-                                <td class="p-2">Rp {{ number_format($penjualan->total_harga, 0, ',', '.') }}</td>
+                                <td class="p-2">{{ \Carbon\Carbon::parse($detail->penjualan->tanggal_penjualan)->format('d-m-Y H:i') }}</td>
+                                <td class="p-2 text-left">{{ $detail->obat->nama_obat ?? 'Obat Dihapus' }}</td>
+                                <td class="p-2">{{ $detail->jumlah }}</td>
+                                <td class="p-2 text-right">Rp {{ number_format($detail->subtotal, 0, ',', '.') }}</td>
                             </tr>
                             @empty
                             <tr>
@@ -101,18 +105,18 @@
                         </tbody>
                     </table>
                 </div>
-
-            </div> {{-- Akhir dari wrapper konten --}}
+            </div>
         </div>
     </div>
-
+@livewireScripts
     @push('scripts')
-    {{-- Memasukkan script Anda ke dalam stack 'scripts' milik layout --}}
+    {{-- Memasukkan SweetAlert2 dan script khusus halaman ini --}}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            // [FIXED] Mengambil token CSRF langsung dari Blade, bukan dari meta tag
+            const csrfToken = '{{ csrf_token() }}';
             
-            // Fungsi untuk mengupdate total harga
             function updateTotalPrice() {
                 let total = 0;
                 document.querySelectorAll('#cart-items tr').forEach(row => {
@@ -138,9 +142,9 @@
                     cartRow.dataset.name = medicineName;
                     cartRow.dataset.price = medicinePrice;
                     cartRow.innerHTML = `
-                        <td class="p-2">${medicineName}</td>
+                        <td class="p-2 text-left">${medicineName}</td>
                         <td class="p-2">1</td>
-                        <td class="p-2">Rp ${medicinePrice.toLocaleString('id-ID')}</td>
+                        <td class="p-2 text-right">Rp ${medicinePrice.toLocaleString('id-ID')}</td>
                         <td class="p-2">
                             <button class="remove-btn bg-red-500 text-white px-2 py-1 rounded text-sm">Hapus</button>
                         </td>
@@ -154,14 +158,12 @@
                 updateTotalPrice();
             }
 
-            // Event listener untuk semua tombol 'Tambahkan'
             document.querySelectorAll('.add-btn').forEach(button => {
                 button.addEventListener('click', function () {
                     addToCart(this);
                 });
             });
 
-            // Event listener untuk tombol checkout
             document.getElementById('checkout-btn').addEventListener('click', function () {
                 const cartItemsEl = document.querySelectorAll('#cart-items tr');
                 if (cartItemsEl.length === 0) {
@@ -200,7 +202,6 @@
                 });
             });
             
-            // Event listener untuk search
             document.getElementById('search-medicine').addEventListener('input', function () {
                 const filter = this.value.toLowerCase();
                 document.querySelectorAll('.medicine-row').forEach(row => {
@@ -211,5 +212,5 @@
         });
     </script>
     @endpush
-
+    @stack('scripts') 
 </x-app-layout>
