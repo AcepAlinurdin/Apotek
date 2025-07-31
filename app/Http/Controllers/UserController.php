@@ -11,34 +11,23 @@ use Illuminate\Validation\Rules;
 class UserController extends Controller
 {
     /**
-     * Menampilkan daftar semua pengguna.
-     *
-     * @return \Illuminate\View\View
+     * Menampilkan daftar pengguna beserta formulir.
      */
     public function index()
     {
-        // Ambil semua user kecuali admin yang sedang login, urutkan dari yang terbaru
         $users = User::where('id', '!=', auth()->id())->latest()->paginate(10);
-        return view('users.index', compact('users')); // Pastikan Anda punya folder 'users' di dalam 'views'
-    }
-
-    /**
-     * Menampilkan form untuk membuat pengguna baru.
-     *
-     * @return \Illuminate\View\View
-     */
-    public function create()
-    {
-        // Ambil semua role yang tersedia untuk ditampilkan di form
         $roles = Role::all();
-        return view('users.create', compact('roles'));
+        
+        // Mengirim objek User kosong untuk mode 'create'
+        return view('users.index', [
+            'users' => $users,
+            'user' => new User(),
+            'roles' => $roles
+        ]);
     }
 
     /**
      * Menyimpan pengguna baru ke dalam database.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
      */
     public function store(Request $request)
     {
@@ -46,7 +35,7 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'role' => ['required', 'exists:roles,name'], // Pastikan role yang dikirim valid
+            'role' => ['required', 'exists:roles,name'],
         ]);
 
         $user = User::create([
@@ -55,30 +44,25 @@ class UserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        // Berikan role yang dipilih dari form
         $user->assignRole($request->role);
 
         return redirect()->route('users.index')->with('success', 'Pengguna berhasil ditambahkan.');
     }
 
     /**
-     * Menampilkan form untuk mengedit data pengguna.
-     *
-     * @param  \App\Models\User  $user
-     * @return \Illuminate\View\View
+     * Menampilkan formulir edit di halaman daftar pengguna.
      */
     public function edit(User $user)
     {
+        $users = User::where('id', '!=', auth()->id())->latest()->paginate(10);
         $roles = Role::all();
-        return view('users.edit', compact('user', 'roles'));
+        
+        // Mengirim data user yang akan diedit ke view yang sama
+        return view('users.index', compact('users', 'user', 'roles'));
     }
 
     /**
      * Memperbarui data pengguna di dalam database.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\User  $user
-     * @return \Illuminate\Http\RedirectResponse
      */
     public function update(Request $request, User $user)
     {
@@ -94,12 +78,10 @@ class UserController extends Controller
             'email' => $request->email,
         ]);
 
-        // Jika ada password baru, update passwordnya
         if ($request->filled('password')) {
             $user->update(['password' => Hash::make($request->password)]);
         }
 
-        // Sinkronkan role. Role lama akan dihapus dan diganti dengan yang baru.
         $user->syncRoles($request->role);
 
         return redirect()->route('users.index')->with('success', 'Data pengguna berhasil diperbarui.');
@@ -107,9 +89,6 @@ class UserController extends Controller
 
     /**
      * Menghapus pengguna dari database.
-     *
-     * @param  \App\Models\User  $user
-     * @return \Illuminate\Http\RedirectResponse
      */
     public function destroy(User $user)
     {

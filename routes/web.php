@@ -53,7 +53,7 @@ Route::middleware(['role:admin'])->group(function () {
         Route::put('/master_data/{id}', [ObatController::class, 'masterUpdate'])->name('obat.master.update');
         Route::delete('/master_data/{id}', [ObatController::class, 'masterDestroy'])->name('obat.master.destroy');
     });
-
+Route::resource('suppliers', App\Http\Controllers\SupplierController::class);
 
     // --- RUTE KHUSUS UNTUK ADMIN ---
     // Hanya admin yang bisa mengelola pengguna/karyawan

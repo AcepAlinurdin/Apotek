@@ -132,9 +132,11 @@ class ObatController extends Controller
         if ($searchTerm) {
             $query->where('nama_obat', 'like', '%' . $searchTerm . '%');
         }
+        $suppliers = \App\Models\Supplier::orderBy('nama_supplier', 'asc')->get();
+
 
         $data_obats = $query->orderBy('nama_obat', 'asc')->get();
-        return view('master_data', compact('data_obats', 'searchTerm'));
+        return view('master_data', compact('data_obats', 'searchTerm', 'suppliers'));
     }
 
     public function masterStore(Request $request)
@@ -208,6 +210,81 @@ class ObatController extends Controller
         $obat->delete();
         return response()->json(['success' => true, 'message' => 'Data obat berhasil dihapus.']);
     }
+
+// =================================================================
+    // =========== [NEW] HALAMAN KELOLA SUPPLIER (CRUD) =============
+    // =================================================================
+
+    /**
+     * Menampilkan daftar semua supplier.
+     */
+    public function supplierIndex()
+    {
+        $suppliers = Supplier::latest()->paginate(10);
+        return view('suppliers.index', compact('suppliers'));
+    }
+
+    /**
+     * Menampilkan formulir untuk membuat supplier baru.
+     */
+    public function supplierCreate()
+    {
+        return view('suppliers.create');
+    }
+
+    /**
+     * Menyimpan supplier baru ke database.
+     */
+    public function supplierStore(Request $request)
+    {
+        $request->validate([
+            'nama_supplier' => 'required|string|max:255|unique:suppliers,nama_supplier',
+            'alamat' => 'nullable|string',
+            'telepon' => 'nullable|string|max:20',
+        ]);
+
+        Supplier::create($request->all());
+
+        return redirect()->route('suppliers.index')
+                         ->with('success', 'Supplier berhasil ditambahkan.');
+    }
+
+    /**
+     * Menampilkan formulir untuk mengedit supplier.
+     */
+    public function supplierEdit(Supplier $supplier)
+    {
+        return view('suppliers.edit', compact('supplier'));
+    }
+
+    /**
+     * Memperbarui data supplier di database.
+     */
+    public function supplierUpdate(Request $request, Supplier $supplier)
+    {
+        $request->validate([
+            'nama_supplier' => 'required|string|max:255|unique:suppliers,nama_supplier,' . $supplier->id,
+            'alamat' => 'nullable|string',
+            'telepon' => 'nullable|string|max:20',
+        ]);
+
+        $supplier->update($request->all());
+
+        return redirect()->route('suppliers.index')
+                         ->with('success', 'Data supplier berhasil diperbarui.');
+    }
+
+    /**
+     * Menghapus supplier dari database.
+     */
+    public function supplierDestroy(Supplier $supplier)
+    {
+        $supplier->delete();
+
+        return redirect()->route('suppliers.index')
+                         ->with('success', 'Supplier berhasil dihapus.');
+    }
+
 
 
     // =================================================================

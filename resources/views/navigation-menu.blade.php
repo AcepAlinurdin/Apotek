@@ -4,9 +4,7 @@
             <div class="flex">
                 <!-- [FIXED] Logo diganti dengan teks -->
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}">
                         <h1 class="text-lg font-bold text-gray-800">Apotek Parakan Muncang</h1>
-                    </a>
                 </div>
 
                 <!-- Navigation Links (Desktop) -->
