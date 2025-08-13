@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ObatController;
 use App\Http\Controllers\PembelianController;
+USE App\Http\Controllers\SupplierController;
 // Pastikan Anda membuat UserController jika belum ada
 // use App\Http\Controllers\UserController;
 
