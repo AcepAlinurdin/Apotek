@@ -15,7 +15,7 @@
                 <div class="mb-12">
                     <h2 class="text-2xl font-semibold mb-4 text-gray-700">1. Daftar Keseluruhan Stok Obat</h2>
                     <p class="mb-4 text-sm text-gray-600">Tabel ini menampilkan semua obat yang terdaftar beserta status ketersediaan stoknya.</p>
-                    <div class="overflow-x-auto">
+                    <div class="overflow-x-auto max-h-96">
                         <table class="w-full border-collapse border border-gray-300">
                             <thead>
                                 <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
@@ -38,7 +38,7 @@
                                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
                                                     Stok Menipis
                                                 </span>
-                                            @elseif($obat->stok >= 20 && $obat->stok <= 50)
+                                            @elseif($obat->stok >= 21 && $obat->stok <= 70)
                                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                                                     Normal
                                                 </span>
@@ -63,7 +63,7 @@
                 <div>
                     <h2 class="text-2xl font-semibold mb-4 text-red-600">2. Daftar Obat Stok Kritis (&lt; 20)</h2>
                      <p class="mb-4 text-sm text-gray-600">Tabel ini hanya menampilkan obat-obatan yang stoknya menipis dan perlu segera dipesan kembali.</p>
-                    <div class="overflow-x-auto">
+                    <div class="overflow-x-auto max-h-96">
                         <table class="w-full border-collapse border border-red-300">
                             <thead>
                                 <tr class="bg-red-200 text-red-800 uppercase text-sm leading-normal">

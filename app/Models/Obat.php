@@ -15,6 +15,7 @@ class Obat extends Model
      * @var array<int, string>
      */
     protected $fillable = [
+        'tanggal', // Tambahkan kolom tanggal
         'supplier_id',
         'nama_obat',
         'kategori',

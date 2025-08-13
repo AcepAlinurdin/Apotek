@@ -32,7 +32,7 @@
       <p class="mb-4"> </p>
       <div class="d-grid gap-2 d-md-flex justify-content-md-center">
         <a href="{{ route('login') }}" class="btn btn-light btn-lg px-4 me-md-2">Login</a>
-        <a href="{{ route('register') }}" class="btn btn-outline-light btn-lg px-4">Register</a>
+       
       </div>
     </div>
   </div>

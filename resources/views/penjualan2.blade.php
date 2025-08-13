@@ -73,8 +73,8 @@
 
             {{-- Riwayat Penjualan di bawah --}}
             <div class="bg-white p-4 rounded-xl shadow mt-6">
-                <h2 class="text-lg font-bold mb-2">20 Riwayat Penjualan Terakhir</h2>
-                <div class="overflow-x-auto">
+                <h2 class="text-lg font-bold mb-2">Riwayat Penjualan</h2>
+                <div class="overflow-x-auto max-h-96">
                     <table class="w-full border-collapse text-center">
                         <thead class="bg-gray-200 z-10">
                             <tr>

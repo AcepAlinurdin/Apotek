@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ObatController;
+use App\Http\Controllers\PembelianController;
 // Pastikan Anda membuat UserController jika belum ada
 // use App\Http\Controllers\UserController; 
 
@@ -35,7 +36,13 @@ Route::middleware([
     // --- RUTE UNTUK SEMUA ROLE (ADMIN, KEPALA APOTEK, APOTEKER) ---
     Route::get('/penjualan', [ObatController::class, 'index'])->name('penjualan.index');
     Route::post('/checkout', [ObatController::class, 'checkout'])->name('checkout');
-    Route::get('/perhitungan', [ObatController::class, 'showRekapStok'])->name('obat.rekap');
+    // routes/web.php
+
+// Rute untuk MENAMPILKAN halaman (method GET)
+Route::get('/perhitungan', [ObatController::class, 'showRekapStok'])->name('obat.rekap');
+
+// Rute untuk MENYIMPAN data (method POST)
+Route::post('/perhitungan/simpan', [ObatController::class, 'simpanPerhitungan'])->name('perhitungan.simpan');
     Route::get('/peramalan', [ObatController::class, 'hitungPeramalan'])->name('obat.peramalan');
     Route::get('/cek', [ObatController::class, 'showStok'])->name('obat.stok');
 
@@ -45,11 +52,18 @@ Route::middleware(['role:admin'])->group(function () {
     // Ganti route karyawan lama Anda dengan ini
 });
 
+
+// Route untuk menampilkan halaman laporan
+Route::get('/laporan-rekomendasi', [PembelianController::class, 'rekap'])->name('obat.rekap');
+
+// Route untuk menyimpan data pembelian
+Route::post('/pembelian/simpan', [PembelianController::class, 'simpan'])->name('pembelian.simpan');
     // --- RUTE KHUSUS UNTUK ADMIN & KEPALA APOTEK ---
     // Apoteker tidak akan bisa mengakses rute di dalam grup ini
     Route::middleware(['role:admin|kepala apotek'])->group(function () {
         Route::get('/master_data', [ObatController::class, 'masterIndex'])->name('obat.master.index');
         Route::post('/master_data', [ObatController::class, 'masterStore'])->name('obat.master.store');
+           Route::post('/master_data/transaksi_sementara', [ObatController::class, 'simpanTransaksiSementara'])->name('obat.transaksi.sementara');
         Route::put('/master_data/{id}', [ObatController::class, 'masterUpdate'])->name('obat.master.update');
         Route::delete('/master_data/{id}', [ObatController::class, 'masterDestroy'])->name('obat.master.destroy');
     });

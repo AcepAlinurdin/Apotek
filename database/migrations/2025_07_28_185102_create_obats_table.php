@@ -13,13 +13,14 @@ return new class extends Migration
     {
         Schema::create('obats', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('supplier_id')->constrained('suppliers');
             $table->string('nama_obat');
-            $table->string('kategori', 100);
-            $table->unsignedInteger('stok')->default(0);
-            $table->decimal('harga_satuan', 10, 2);
-            $table->decimal('harga_box', 12, 2)->nullable();
+            $table->string('satuan'); // Misalnya: box, strip, pcs
+            $table->decimal('harga_pcs', 10, 2);
+            $table->decimal('harga_box', 10, 2)->nullable();
+            $table->unsignedBigInteger('supplier_id')->nullable();
             $table->timestamps();
+
+            $table->foreign('supplier_id')->references('id')->on('suppliers')->onDelete('set null');
         });
     }
 
