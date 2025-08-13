@@ -66,8 +66,24 @@ Route::post('/pembelian/simpan', [PembelianController::class, 'simpan'])->name('
            Route::post('/master_data/transaksi_sementara', [ObatController::class, 'simpanTransaksiSementara'])->name('obat.transaksi.sementara');
         Route::put('/master_data/{id}', [ObatController::class, 'masterUpdate'])->name('obat.master.update');
         Route::delete('/master_data/{id}', [ObatController::class, 'masterDestroy'])->name('obat.master.destroy');
-    });
-Route::resource('suppliers', App\Http\Controllers\SupplierController::class);
+//     });
+// Route::resource('suppliers', App\Http\Controllers\SupplierController::class);
+Route::get('/suppliers', [SupplierController::class, 'index'])->name('suppliers.index');
+
+// Menampilkan form untuk membuat supplier baru
+Route::get('/suppliers/create', [SupplierController::class, 'create'])->name('suppliers.create');
+
+// Menyimpan data supplier baru
+Route::post('/suppliers', [SupplierController::class, 'store'])->name('suppliers.store');
+
+// Menampilkan form untuk mengedit supplier
+Route::get('/suppliers/{id}/edit', [SupplierController::class, 'edit'])->name('suppliers.edit');
+
+// Memperbarui data supplier
+Route::put('/suppliers/{id}', [SupplierController::class, 'update'])->name('suppliers.update');
+
+// Menghapus data supplier
+Route::delete('/suppliers/{id}', [SupplierController::class, 'destroy'])->name('suppliers.destroy');
 
     // --- RUTE KHUSUS UNTUK ADMIN ---
     // Hanya admin yang bisa mengelola pengguna/karyawan
