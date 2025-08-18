@@ -6,6 +6,8 @@ namespace App\Http\Controllers;
 use App\Models\Obat;
 use App\Models\Supplier;
 use App\Models\Penjualan;
+use App\Models\Perhitungan;
+use App\Models\DetailPerhitungan;
 use App\Models\DetailPenjualan;
 use App\Models\Pegawai; // Asumsi Anda sudah membuat model ini
 use Illuminate\Http\Request;
@@ -334,6 +336,7 @@ public function masterDestroy($id)
     // =========== HALAMAN REKAP & PERAMALAN ==============
     // =================================================================
     
+  
  public function showRekapStok(Request $request)
 {
     // --- Bagian 1: Mengambil semua input dari user (Tidak ada perubahan) ---
@@ -341,7 +344,8 @@ public function masterDestroy($id)
     $tanggalAkhir = $request->input('tanggal_akhir', Carbon::now()->toDateString());
     $searchTerm = $request->input('search');
     $selectedObatId = $request->input('obat_id');
-
+     $suppliers = Supplier::orderBy('nama_supplier', 'asc')->get();
+     $semuaObat = Obat::orderBy('nama_obat', 'asc')->get(['id', 'nama_obat', 'supplier_id', 'harga_satuan', 'harga_box']);
     // Ambil parameter fuzzy berdasarkan rentang tanggal
     $fuzzyParams = $this->getFuzzyParamsFromDB($tanggalMulai, $tanggalAkhir);
 
@@ -392,26 +396,14 @@ public function masterDestroy($id)
             'rekomendasi_pembelian' => round($rekomendasi),
             'harga_box' => $obat->harga_box,
             'harga_pcs' => $obat->harga_satuan
+            
         ];
     }
     
     // --- Bagian 5: Kirim data ke View (Tidak ada perubahan) ---
-    return view('perhitungan', compact('hasilPeramalan', 'searchTerm', 'tanggalMulai', 'tanggalAkhir', 'selectedObatId'));
+    return view('perhitungan', compact('hasilPeramalan', 'searchTerm', 'tanggalMulai', 'tanggalAkhir', 'selectedObatId','suppliers','semuaObat'));
 }
-public function simpanPerhitungan(Request $request)
-{
-    try {
-        Perhitungan::create([
-            'pegawai_id' => auth()->id(),
-            'tanggal_perhitungan' => now(),
-            'hasil_json' => json_encode($request->input('hasil'))
-        ]);
-        return response()->json(['success' => true, 'message' => 'Hasil perhitungan berhasil disimpan ke database!']);
-    } catch (\Exception $e) {
-        Log::error('Gagal menyimpan perhitungan: ' . $e->getMessage());
-        return response()->json(['success' => false, 'message' => 'Terjadi kesalahan saat menyimpan data.'], 500);
-    }
-}
+
 
 private function getFuzzyParamsFromDB($tanggalMulai, $tanggalAkhir): array
 {
@@ -601,5 +593,60 @@ private function getFuzzyParamsFromDB($tanggalMulai, $tanggalAkhir): array
     }
 
 }
+public function simpanPerhitungan(Request $request)
+{
+    // Validasi input
+    $validated = $request->validate([
+        'hasil' => 'required|array|min:1',
+        'hasil.*.obat_id' => 'required|integer|exists:obats,id',
+        'hasil.*.nama_obat' => 'required|string', // Pastikan nama_obat juga dikirim
+        'hasil.*.stok_saat_ini' => 'required|integer',
+        'hasil.*.total_penjualan_periode' => 'required|integer',
+        'hasil.*.rekomendasi_pembelian' => 'required|integer',
+    ]);
 
+    DB::beginTransaction();
+
+    try {
+        // 1. Siapkan data ringkasan rekomendasi untuk kolom hasil_json
+        // Kita akan membuat array yang berisi nama obat dan jumlah rekomendasinya.
+        $rekomendasiUntukJson = array_map(function ($item) {
+            return [
+                'nama_obat' => $item['nama_obat'],
+                'rekomendasi' => $item['rekomendasi_pembelian']
+            ];
+        }, $validated['hasil']);
+
+        // 2. Buat record "header" di tabel 'perhitungans'
+        $perhitungan = Perhitungan::create([
+            'pegawai_id'          => auth()->id(),
+            'tanggal_perhitungan' => now(),
+            'hasil_json'          => json_encode($rekomendasiUntukJson) // Simpan ringkasan rekomendasi
+        ]);
+
+        // 3. Loop dan simpan data lengkap ke 'detail_perhitungans'
+        foreach ($validated['hasil'] as $item) {
+            DetailPerhitungan::create([
+                'perhitungan_id'          => $perhitungan->id,
+                'obat_id'                 => $item['obat_id'],
+                'stok_saat_ini'           => $item['stok_saat_ini'],
+                'total_penjualan_terakhir'=> $item['total_penjualan_periode'],
+                'rekomendasi_pembelian'   => $item['rekomendasi_pembelian'],
+            ]);
+        }
+
+        DB::commit();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Hasil perhitungan berhasil disimpan!',
+            'perhitungan_id' => $perhitungan->id
+        ]);
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        Log::error('Gagal menyimpan perhitungan: ' . $e->getMessage() . ' at line ' . $e->getLine());
+        return response()->json(['success' => false, 'message' => 'Terjadi kesalahan internal saat menyimpan data.'], 500);
+    }
+}
 }

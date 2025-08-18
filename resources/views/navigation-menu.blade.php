@@ -9,6 +9,13 @@
 
                 <!-- Navigation Links (Desktop) -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    
+                @hasanyrole('kepala apotek')
+                <x-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
+                    {{ __('Dashboard') }}
+                </x-nav-link>
+                @endhasanyrole
+
                     {{-- Urutan menu diubah sesuai permintaan --}}
                     @hasanyrole('admin|kepala apotek')
                         <x-nav-link href="{{ route('obat.master.index') }}" :active="request()->routeIs('obat.master.*')">

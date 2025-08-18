@@ -14,8 +14,6 @@ class SupplierController extends Controller
     {
         $suppliers = Supplier::latest()->paginate(10);
         
-        // [FIXED] Mengirim variabel '$supplier' kosong untuk mode 'create'
-        // Ini akan memastikan $supplier->exists selalu bisa dievaluasi tanpa error.
         return view('suppliers.index', [
             'suppliers' => $suppliers, 
             'supplier' => new Supplier()
@@ -40,12 +38,21 @@ class SupplierController extends Controller
     }
 
     /**
+     * Menampilkan data supplier beserta obat-obatnya dalam format JSON.
+     */
+    public function show(Supplier $supplier)
+    {
+        // Load relasi obat
+        $supplier->load('obats');
+        return response()->json($supplier);
+    }
+    
+    /**
      * Menampilkan formulir untuk mengedit data supplier di halaman index.
      */
     public function edit(Supplier $supplier)
     {
         $suppliers = Supplier::latest()->paginate(10);
-        // Mengirim data supplier yang akan diedit ke view
         return view('suppliers.index', compact('suppliers', 'supplier'));
     }
 

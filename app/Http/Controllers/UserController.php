@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
 use Illuminate\Validation\Rules;
@@ -11,19 +12,12 @@ use Illuminate\Validation\Rules;
 class UserController extends Controller
 {
     /**
-     * Menampilkan daftar pengguna beserta formulir.
+     * Menampilkan daftar pengguna dan form untuk tambah/edit.
      */
     public function index()
     {
-        $users = User::where('id', '!=', auth()->id())->latest()->paginate(10);
-        $roles = Role::all();
-        
-        // Mengirim objek User kosong untuk mode 'create'
-        return view('users.index', [
-            'users' => $users,
-            'user' => new User(),
-            'roles' => $roles
-        ]);
+        // Panggil method 'edit' dengan user baru agar formnya kosong
+        return $this->edit(new User());
     }
 
     /**
@@ -31,6 +25,11 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
+        $requestedRole = $request->input('role');
+
+        // Keamanan di backend: Gunakan Gate untuk otorisasi
+        Gate::authorize('create-user-with-role', $requestedRole);
+
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class],
@@ -44,21 +43,36 @@ class UserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        $user->assignRole($request->role);
+        // Gunakan method dari Spatie untuk menetapkan role
+        $user->assignRole($requestedRole);
 
         return redirect()->route('users.index')->with('success', 'Pengguna berhasil ditambahkan.');
     }
 
     /**
      * Menampilkan formulir edit di halaman daftar pengguna.
+     * Ini juga akan menangani tampilan untuk 'create'.
      */
     public function edit(User $user)
     {
         $users = User::where('id', '!=', auth()->id())->latest()->paginate(10);
-        $roles = Role::all();
         
-        // Mengirim data user yang akan diedit ke view yang sama
-        return view('users.index', compact('users', 'user', 'roles'));
+        // --- LOGIKA PENYARINGAN ROLE ---
+        $allRoles = Role::all();
+        $allowedRoles = [];
+
+        // Loop melalui semua role dan periksa izinnya menggunakan Gate
+        foreach ($allRoles as $role) {
+            if (Gate::allows('create-user-with-role', $role->name)) {
+                $allowedRoles[] = $role;
+            }
+        }
+        
+        return view('users.index', [
+            'users' => $users,
+            'user' => $user, // Ini bisa user baru (kosong) atau user yang diedit
+            'roles' => $allowedRoles // Kirim role yang sudah disaring
+        ]);
     }
 
     /**
@@ -66,6 +80,12 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
+        $requestedRole = $request->input('role');
+
+        // Keamanan di backend: Gunakan Gate untuk otorisasi
+        // Asumsi aturan untuk update sama dengan create
+        Gate::authorize('create-user-with-role', $requestedRole);
+
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class.',email,'.$user->id],
@@ -82,7 +102,8 @@ class UserController extends Controller
             $user->update(['password' => Hash::make($request->password)]);
         }
 
-        $user->syncRoles($request->role);
+        // Gunakan method dari Spatie untuk sinkronisasi role
+        $user->syncRoles($requestedRole);
 
         return redirect()->route('users.index')->with('success', 'Data pengguna berhasil diperbarui.');
     }

@@ -66,6 +66,8 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ Str::limit($item->alamat, 50) ?? '-' }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $item->telepon ?? '-' }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                                        {{-- ✅ TOMBOL BARU: Tombol 'Lihat' untuk menampilkan detail --}}
+                                        <button class="show-btn text-blue-600 hover:text-blue-900 mr-4" data-id="{{ $item->id }}">Lihat</button>
                                         <a href="{{ route('suppliers.edit', $item->id) }}" class="text-indigo-600 hover:text-indigo-900 mr-4">Edit</a>
                                         <form action="{{ route('suppliers.destroy', $item->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus supplier ini?');">
                                             @csrf
@@ -89,11 +91,77 @@
             </div>
         </div>
     </div>
-
-    {{-- Alert Biasa --}}
-    @if (session('success'))
-        <script>
-            alert("{{ session('success') }}");
-        </script>
-    @endif
 </x-app-layout>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.show-btn').forEach(button => {
+            button.addEventListener('click', function () {
+                const supplierId = this.dataset.id;
+                
+                // Ambil data dari server
+                fetch(`/suppliers/${supplierId}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Gagal mengambil data supplier.');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        let obatListHtml = `
+                            <div class="overflow-y-auto max-h-5 mt-4">
+                                <table class="w-full text-sm text-left text-gray-500">
+                                    <thead class="text-xs text-gray-700 uppercase bg-gray-50 sticky top-0">
+                                        <tr>
+                                            <th scope="col" class="px-6 py-3">Nama Obat</th>
+                                            <th scope="col" class="px-6 py-3 text-center">Stok</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                        `;
+                        if (data.obats && data.obats.length > 0) {
+                            data.obats.forEach(obat => {
+                                obatListHtml += `
+                                    <tr class="bg-white border-b hover:bg-gray-50">
+                                        <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">${obat.nama_obat}</td>
+                                        <td class="px-6 py-4 text-center">${obat.stok}</td>
+                                    </tr>
+                                `;
+                            });
+                        } else {
+                            obatListHtml += `
+                                <tr class="bg-white">
+                                    <td colspan="2" class="px-6 py-4 text-center text-gray-500">Tidak ada obat yang terdaftar.</td>
+                                </tr>
+                            `;
+                        }
+                        obatListHtml += `</tbody></table></div>`;
+
+
+                        Swal.fire({
+                            title: `<strong>DAFTAR OBAT ${data.nama_supplier}</strong>`,
+                            icon: 'info',
+                            html: `
+                                <div class="text-left">
+                                    <p class="mb-2"><strong>Alamat:</strong> ${data.alamat || 'N/A'}</p>
+                                    <p class="mb-4"><strong>Telepon:</strong> ${data.telepon || 'N/A'}</p>
+                                    <h4 class="font-bold mt-4">Daftar Obat:</h4>
+                                    ${obatListHtml}
+                                </div>
+                            `,
+                            showCloseButton: true,
+                            confirmButtonText: 'Tutup'
+                        });
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: error.message,
+                        });
+                    });
+            });
+        });
+    });
+</script>

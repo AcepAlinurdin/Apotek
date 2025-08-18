@@ -33,7 +33,7 @@
                 <div class="mb-12">
                     <h2 class="text-2xl font-semibold mb-4 text-green-800">Rencana Pembelian</h2>
                     <form id="form-pembelian">
-                        <div class="overflow-x-auto max-h-80"> <!-- ✅ Perubahan: max-h-80 untuk membuat tabel dapat di-scroll -->
+                        <div class="overflow-x-auto max-h-80">
                             <table class="w-full border-collapse">
                                 <thead class="sticky top-0 bg-green-600">
                                     <tr class="text-white uppercase text-sm leading-normal">
@@ -64,7 +64,7 @@
                 <!-- TABEL HASIL PERAMALAN (sebagai sumber data) -->
                 <div class="mb-12">
                     <h2 class="text-2xl font-semibold mb-4 text-blue-800">Hasil Perhitungan Fuzzy Mamdani</h2>
-                    <div class="overflow-x-auto max-h-96"> <!-- ✅ Perubahan: max-h-96 untuk membuat tabel dapat di-scroll -->
+                    <div class="overflow-x-auto max-h-96">
                         <table class="w-full border-collapse">
                             <thead class="sticky top-0 bg-blue-600">
                                 <tr class="text-white uppercase text-sm leading-normal">

@@ -28,26 +28,74 @@ class master_dataController extends Controller
      */
     public function store(Request $request)
     {
-        // Validasi input dari form
-        $request->validate([
-            'nama_obat' => 'required|string|max:255',
-            'kategori' => 'required|string|max:255',
-            'stok' => 'required|integer|min:0',
-            'harga' => 'required|numeric|min:0',
-        ]);
+        DB::beginTransaction();
+        try {
+            // Validasi data
+            $validatedData = $request->validate([
+                'tanggal' => 'required|date',
+                'nama_obat' => 'required|string|max:255',
+                'kategori' => 'required|string|max:255',
+                'supplier' => 'required|string|max:255',
+                'stok' => 'required|integer|min:0',
+                'harga_satuan' => 'required|numeric|min:0',
+                'harga_box' => 'nullable|numeric|min:0',
+            ]);
 
-        // Membuat data baru di database
-        $obat = DataObat::create([
-            'nama_obat' => $request->nama_obat,
-            'kategori' => $request->kategori,
-            'stok' => $request->stok,
-            'harga_satuan' => $request->harga, // 'harga' dari form disimpan ke 'harga_satuan'
-        ]);
+            // Cari ID supplier berdasarkan nama
+            $supplier = Supplier::where('nama_supplier', $validatedData['supplier'])->first();
+            if (!$supplier) {
+                return response()->json(['success' => false, 'message' => 'Supplier tidak ditemukan.'], 404);
+            }
 
-        // Mengirim respon sukses dalam format JSON
-        return response()->json(['success' => true, 'data' => $obat]);
+            // Mencari apakah obat dengan nama yang sama sudah ada
+            $existingObat = Obat::where('nama_obat', $validatedData['nama_obat'])->first();
+
+            if ($existingObat) {
+                // Jika suppliernya sama, kembalikan error
+                if ($existingObat->supplier_id === $supplier->id) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'nama_obat' => ['Obat dengan nama dan supplier yang sama sudah ada.']
+                    ]);
+                }
+                
+                // Jika suppliernya berbeda, update supplier_id dari obat yang sudah ada
+                $existingObat->update(['supplier_id' => $supplier->id]);
+                $obat = $existingObat; // Gunakan objek yang sudah ada
+            } else {
+                // Jika obat belum ada, buat entri baru
+                $obat = Obat::create([
+                    'tanggal' => $validatedData['tanggal'],
+                    'nama_obat' => $validatedData['nama_obat'],
+                    'kategori' => $validatedData['kategori'],
+                    'supplier_id' => $supplier->id,
+                    'harga_satuan' => $validatedData['harga_satuan'],
+                    'harga_box' => $validatedData['harga_box'],
+                ]);
+            }
+
+            // Buat entri di tabel stoks untuk stok awal
+            if ($validatedData['stok'] > 0) {
+                Stok::create([
+                    'obat_id' => $obat->id,
+                    'tipe_pergerakan' => 'masuk',
+                    'jumlah' => $validatedData['stok'],
+                    'tanggal' => $validatedData['tanggal'],
+                    'keterangan' => 'Stok awal saat pendaftaran obat',
+                ]);
+            }
+
+            DB::commit();
+
+            return response()->json(['success' => true, 'message' => 'Data obat berhasil disimpan.', 'data' => $obat]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollBack();
+            return response()->json(['errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
     }
-
     // --- CATATAN ---
     // Kode di bawah ini adalah untuk fungsi checkout dan tidak perlu diubah,
     // tapi pastikan Anda sudah menyesuaikannya sesuai kebutuhan.

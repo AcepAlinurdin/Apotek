@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ObatController;
 use App\Http\Controllers\PembelianController;
 USE App\Http\Controllers\SupplierController;
+use App\Http\Controllers\DashboardController;
 // Pastikan Anda membuat UserController jika belum ada
 // use App\Http\Controllers\UserController;
 
@@ -29,9 +30,8 @@ Route::middleware([
     "verified",
 ])->group(function () {
     // Dashboard (Bisa diakses semua role yang login)
-    Route::get("/dashboard", function () {
-        return view("dashboard");
-    })->name("dashboard");
+
+    
 
     // --- RUTE UNTUK SEMUA ROLE (ADMIN, KEPALA APOTEK, APOTEKER) ---
     Route::get("/penjualan", [ObatController::class, "index"])->name(
@@ -138,9 +138,10 @@ Route::middleware([
     // Hanya admin yang bisa mengelola pengguna/karyawan
     // --- RUTE KHUSUS UNTUK ADMIN ---
     // Hanya admin yang bisa mengelola pengguna/karyawan
-    Route::middleware(["role:admin"])->group(function () {
+    Route::middleware(["role:admin|kepala apotek"])->group(function () {
         Route::resource("users", App\Http\Controllers\UserController::class);
     });
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 }); // <-- Tambahkan penutup kurung kurawal dan tanda kurung tutup di sini
 
 // Rute-rute lama yang tidak terpakai atau sudah dipindahkan bisa dihapus.
