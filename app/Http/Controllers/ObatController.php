@@ -45,69 +45,69 @@ class ObatController extends Controller
      * Memproses permintaan checkout dari kasir.
      */
     public function checkout(Request $request)
-    {
-        $validated = $this->validateRequest($request);
-        DB::beginTransaction();
+{
+    // UBAH VALIDASI: Kita sekarang mewajibkan 'id', bukan 'name'.
+    $validated = $request->validate([
+        'cartItems' => 'required|array|min:1',
+        'cartItems.*.id' => 'required|integer|exists:obats,id', // Validasi berdasarkan ID
+        'cartItems.*.quantity' => 'required|integer|min:1'
+    ]);
 
-        try {
-            // [REFACTORED] Logika checkout dirombak total untuk struktur header-detail
-            $this->processNewCheckout($validated['cartItems']);
-            
-            DB::commit();
-            return response()->json(['success' => true, 'message' => 'Checkout berhasil']);
+    DB::beginTransaction();
 
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Checkout error: '.$e->getMessage().' Stack: '.$e->getTraceAsString());
-            return response()->json(['success' => false, 'message' => 'Terjadi kesalahan: ' . $e->getMessage()], 500);
+    try {
+        // Panggil method processNewCheckout dengan data yang sudah divalidasi
+        $this->processNewCheckout($validated['cartItems']);
+        
+        DB::commit();
+        return response()->json(['success' => true, 'message' => 'Checkout berhasil']);
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        Log::error('Checkout error: '.$e->getMessage().' Stack: '.$e->getTraceAsString());
+        return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+    }
+}
+
+/**
+ * Logika inti untuk checkout.
+ */
+protected function processNewCheckout(array $cartItems)
+{
+    $totalHargaKeseluruhan = 0;
+    foreach ($cartItems as $item) {
+        // UBAH CARA PENCARIAN: Gunakan find() dengan ID, lebih cepat dan akurat.
+        $obat = Obat::find($item['id']); 
+        if ($obat) {
+            $totalHargaKeseluruhan += $obat->harga_satuan * $item['quantity'];
         }
     }
 
-    /**
-     * [REFACTORED] Logika inti baru untuk checkout dengan header-detail.
-     */
-    protected function processNewCheckout(array $cartItems)
-    {
-        // 1. Hitung total harga keseluruhan terlebih dahulu
-        $totalHargaKeseluruhan = 0;
-        foreach ($cartItems as $item) {
-            $obat = Obat::where('nama_obat', $item['name'])->first();
-            if ($obat) {
-                $totalHargaKeseluruhan += $obat->harga_satuan * $item['quantity'];
-            }
+    $penjualan = Penjualan::create([
+        'pegawai_id' => auth()->id(),
+        'tanggal_penjualan' => now(),
+        'total_harga' => $totalHargaKeseluruhan,
+    ]);
+
+    foreach ($cartItems as $item) {
+        $obat = Obat::find($item['id']);
+
+        if ($obat->stok < $item['quantity']) {
+            // Rollback manual tidak perlu di sini karena sudah ada di catch
+            throw new \Exception("Stok {$obat->nama_obat} tidak mencukupi.");
         }
 
-        // 2. Buat satu record di tabel 'penjualans' (header)
-        // TODO: Ganti 'pegawai_id' dengan ID pegawai yang sedang login.
-        // Untuk sementara, kita gunakan ID 1 sebagai contoh.
-        $penjualan = Penjualan::create([
-            'pegawai_id' => auth()->id(), // Mengambil ID user yang terautentikasi
-            'tanggal_penjualan' => now(),
-            'total_harga' => $totalHargaKeseluruhan,
+        DetailPenjualan::create([
+            'penjualan_id' => $penjualan->id,
+            'obat_id' => $obat->id, // Gunakan ID langsung dari item
+            'jumlah' => $item['quantity'],
+            'harga_satuan' => $obat->harga_satuan,
+            'subtotal' => $obat->harga_satuan * $item['quantity'],
         ]);
 
-        // 3. Loop lagi untuk membuat record di 'detail_penjualans' dan mengurangi stok
-        foreach ($cartItems as $item) {
-            $obat = Obat::where('nama_obat', $item['name'])->firstOrFail();
-
-            // Cek ketersediaan stok
-            if ($obat->stok < $item['quantity']) {
-                throw new \Exception("Stok {$obat->nama_obat} tidak mencukupi.");
-            }
-
-            // Buat record detail penjualan
-            DetailPenjualan::create([
-                'penjualan_id' => $penjualan->id,
-                'obat_id' => $obat->id,
-                'jumlah' => $item['quantity'],
-                'harga_satuan' => $obat->harga_satuan, // Simpan harga saat transaksi
-                'subtotal' => $obat->harga_satuan * $item['quantity'],
-            ]);
-
-            // Kurangi stok dari tabel master 'obats'
-            $obat->decrement('stok', $item['quantity']);
-        }
+        $obat->decrement('stok', $item['quantity']);
     }
+}
 
     /**
      * Aturan validasi untuk request checkout.

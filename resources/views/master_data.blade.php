@@ -132,7 +132,7 @@
                                         <td class="py-3 px-6 text-right">Rp {{ number_format($obat->harga_box, 0, ',', '.') }}</td>
                                         <td class="py-3 px-6 text-center">
                                             <button class="edit-btn bg-yellow-500 text-white py-1 px-3 rounded hover:bg-yellow-600 text-xs" data-id="{{ $obat->id }}">Edit</button>
-                                            <button class="delete-btn bg-red-500 text-white py-1 px-3 rounded hover:bg-red-600 text-xs" data-id="{{ $obat->id }}">Hapus</button>
+                                            <!-- <button class="delete-btn bg-red-500 text-white py-1 px-3 rounded hover:bg-red-600 text-xs" data-id="{{ $obat->id }}">Hapus</button> -->
                                         </td>
                                     </tr>
                                 @empty
