@@ -8,18 +8,11 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
-
-                {{-- Formulir Tambah/Edit --}}
                 <div class="mb-8 p-4 bg-gray-50 border border-gray-200 rounded-lg">
-                    {{-- [REVISED] Menambahkan class flex untuk mengatur layout --}}
                     <h3 class="flex justify-between items-center text-lg font-semibold mb-4">
-
-                        {{-- Judul di sebelah kiri --}}
                         <span>
                             {{ $supplier->exists ? 'Edit Data Supplier' : 'Tambah Supplier Baru' }}
                         </span>
-
-                        {{-- Link di sebelah kanan --}}
                         <a href="{{ route('obat.master.index') }}" class="text-sm text-blue-600 hover:underline">
                             &larr; Kembali ke Master Data
                         </a>
@@ -35,7 +28,6 @@
                         @if ($supplier->exists)
                         @method('PUT')
                         @endif
-
                         <div class="space-y-4">
                             <div>
                                 <x-label for="nama_supplier" value="Nama Supplier" />
@@ -64,8 +56,6 @@
                         </div>
                     </form>
                 </div>
-
-                {{-- Tabel Daftar Supplier --}}
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">

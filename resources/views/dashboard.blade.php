@@ -4,11 +4,9 @@
             {{ __('Dashboard') }}
         </h2>
     </x-slot>
-
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
-                
+            <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg"> 
                 {{-- Tampilan Default untuk semua user --}}
                 <div class="p-6 sm:px-20 bg-white border-b border-gray-200">
                     <div class="mt-4 text-2xl">
@@ -21,16 +19,13 @@
                         </span>
                     </div>
                 </div>
-
                 @role('admin|kepala apotek')
                 <div class="p-6 sm:px-20 bg-gray-50 grid grid-cols-1 md:grid-cols-2 gap-8">
-                    
                     {{-- Kolom 1: Laporan Penjualan Dinamis --}}
                     <div>
                         <h3 class="text-xl font-semibold text-gray-700 border-b pb-2 mb-4">
                             {{ $laporanPenjualanTitle }}
                         </h3>
-
                         <form id="form-filter-penjualan" class="mb-4 p-4 bg-gray-100 rounded-lg">
                             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                                 <div>
@@ -58,12 +53,10 @@
                                 </div>
                             </div>
                         </form>
-                        
                         <div class="bg-green-100 border border-green-300 p-4  mb-4">
                             <h4 class="font-semibold text-green-800">Total Pendapatan </h4>
                             <p class="text-2xl font-bold">Rp {{ number_format($totalPendapatan, 0, ',', '.') }}</p>
                         </div>
-
                         <div class="overflow-y-auto max-h-96">
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-100">
@@ -87,13 +80,10 @@
                             </table>
                         </div>
                     </div>
-
-                    {{-- Kolom 2: Laporan Pembelian Dinamis --}}
                     <div>
                         <h3 class="text-xl font-semibold text-gray-700 border-b pb-2 mb-4">
                             {{ $laporanPembelianTitle }}
                         </h3>
-
                         <form id="form-filter-pembelian" class="mb-4 p-4 bg-gray-100 rounded-lg">
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
@@ -144,51 +134,38 @@
                             </table>
                         </div>
                     </div>
-
                 </div>
                 @endrole
-
             </div>
         </div>
     </div>
-
     @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             document.querySelectorAll('.btn-filter').forEach(button => {
                 button.addEventListener('click', function (event) {
                     event.preventDefault();
-
                     const form = this.closest('form');
                     const params = new URLSearchParams();
-                    
-                    // Ambil parameter dari URL saat ini untuk dipertahankan
                     const currentParams = new URLSearchParams(window.location.search);
                     const otherFormId = form.id === 'form-filter-penjualan' ? 'form-filter-pembelian' : 'form-filter-penjualan';
                     const otherFormInputs = document.querySelectorAll(`#${otherFormId} [name]`);
-                    
-                    // Pertahankan parameter dari form lain jika ada di URL
                     otherFormInputs.forEach(input => {
                         if (currentParams.has(input.name)) {
                             params.append(input.name, currentParams.get(input.name));
                         }
                     });
-
-                    // Tambahkan/timpa dengan parameter dari form yang sedang disubmit
                     new FormData(form).forEach((value, key) => {
                         if (value) {
                             params.set(key, value);
                         }
                     });
-
                     window.location.href = `{{ route('dashboard') }}?${params.toString()}`;
                 });
             });
-            
             const tanggalInput = document.getElementById('tanggal');
             const bulanSelect = document.getElementById('bulan');
             const tahunSelect = document.getElementById('tahun');
-
             if (bulanSelect && tahunSelect && tanggalInput) {
                 const resetTanggal = () => tanggalInput.value = '';
                 bulanSelect.addEventListener('change', resetTanggal);

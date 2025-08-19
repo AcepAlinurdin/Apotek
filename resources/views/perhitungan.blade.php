@@ -9,7 +9,6 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
 
-                <!-- Filter & Opsi -->
                 <div class="mb-6 bg-white p-4 rounded-lg shadow">
                     <h3 class="text-lg font-medium text-gray-800 mb-2">Filter Data Penjualan</h3>
                     <form action="{{ route('obat.rekap') }}" method="GET" class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
@@ -27,9 +26,6 @@
                     </form>
                 </div>
                 
-                ---
-
-                <!-- TABEL HASIL PERAMALAN (sebagai sumber data) -->
                 <div class="mb-12">
                     <h2 class="text-2xl font-semibold mb-4 text-blue-800">Hasil Perhitungan Fuzzy Mamdani</h2>
                     <div class="overflow-x-auto max-h-96">
@@ -69,7 +65,7 @@
                     </div>
                 </div>
 
-                <!-- Formulir dan Tombol Aksi Baru -->
+    
                 <div class="mb-6 bg-white p-4 rounded-lg shadow">
                     <h3 class="text-lg font-medium text-gray-800 mb-2">Pilih Obat untuk Pembelian</h3>
                     <div id="selected-obat-list" class="space-y-2 mb-4">
@@ -107,7 +103,7 @@
         const hasilPeramalan = @json($hasilPeramalan);
         let selectedObat = {};
 
-        // Event listener untuk checkbox
+   
         $('input[name="obat_terpilih[]"]').on('change', function() {
             const obatId = $(this).val();
             const obatData = hasilPeramalan.find(o => o.obat_id == obatId);
@@ -122,7 +118,6 @@
             renderSelectedObatList();
         });
 
-        // Tampilkan daftar obat yang dipilih
         function renderSelectedObatList() {
             const container = $('#selected-obat-list');
             container.empty();
@@ -140,7 +135,7 @@
             }
         }
 
-        // Tombol untuk menyimpan perhitungan
+
         $('#btn-pilih-obat').on('click', function() {
             if (Object.keys(selectedObat).length === 0) {
                 Swal.fire({ icon: 'warning', title: 'Keranjang Kosong', text: 'Pilih obat terlebih dahulu!' });
@@ -170,14 +165,6 @@
             });
         });
 
-        // Tombol untuk memproses pembelian
-       // GANTI SELURUH FUNGSI CLICK #btn-proses-pembelian ANDA DENGAN INI
-
-// GANTI SELURUH FUNGSI CLICK #btn-proses-pembelian ANDA DENGAN INI
-
-// GANTI SELURUH FUNGSI CLICK #btn-proses-pembelian ANDA DENGAN INI
-
-// GANTI SELURUH FUNGSI CLICK #btn-proses-pembelian ANDA DENGAN INI
 
 $('#btn-proses-pembelian').on('click', function() {
     const perhitunganId = $('#perhitungan_id').val();
@@ -191,7 +178,6 @@ $('#btn-proses-pembelian').on('click', function() {
         return;
     }
 
-    // -- MEMBUAT FORM HTML DINAMIS (VERSI LENGKAP) --
     let formHtml = `
         <div class="text-left mb-4">
             <label for="status_pembelian" class="block text-sm font-medium text-gray-700">Status Pembayaran</label>
@@ -201,16 +187,8 @@ $('#btn-proses-pembelian').on('click', function() {
             </select>
         </div>
         <div id="form-pembelian-detail" class="space-y-4 text-left">
-            <div class="grid grid-cols-12 gap-x-4 font-bold border-b pb-2 text-sm text-gray-600">
-                <div class="col-span-3">Nama Obat</div>
-                <div class="col-span-3">Supplier</div>
-                <div class="col-span-2 text-center">Jumlah</div>
-                <div class="col-span-2 text-center">Harga Satuan</div>
-                <div class="col-span-2 text-center">Harga Box</div>
-            </div>
     `;
 
-    // Loop untuk menampilkan obat yang sudah direkomendasikan
     obatTerpilih.forEach(item => {
         let supplierOptions = '<option value="">Pilih Supplier</option>';
         suppliers.forEach(supplier => {
@@ -220,16 +198,21 @@ $('#btn-proses-pembelian').on('click', function() {
 
         formHtml += `
             <div class="grid grid-cols-12 gap-x-4 items-center border-b py-2 form-row" data-obat-id="${item.obat_id}">
+            <label class="sr-only">Nama Obat Obat</label>
                 <div class="col-span-3 font-semibold text-gray-700">${item.nama_obat}</div>
+                <label class="sr-only">Pilih Supplier</label>
                 <div class="col-span-3"><select name="supplier_id" class="swal2-select m-0 w-full">${supplierOptions}</select></div>
+                <label class="sr-only">Jumlah Pembelian</label>
                 <div class="col-span-2"><input type="number" name="jumlah" class="swal2-input m-0 w-full text-center" value="${item.rekomendasi_pembelian}"></div>
+                <label class="sr-only">Harga Beli Satuan</label>
                 <div class="col-span-2"><input type="number" name="harga_beli_satuan" class="swal2-input m-0 w-full text-center" value="${item.harga_pcs}"></div>
+                <label class="sr-only">Harga Beli Box</label>
                 <div class="col-span-2"><input type="number" name="harga_beli_box" class="swal2-input m-0 w-full text-center" value="${item.harga_box || 0}"></div>
             </div>
         `;
     });
     
-    formHtml += `</div>`; // Penutup div #form-pembelian-detail
+    formHtml += `</div>`; 
 
     formHtml += `
         <div class="text-left mt-4">
@@ -239,7 +222,6 @@ $('#btn-proses-pembelian').on('click', function() {
         </div>
     `;
 
-    // -- MENAMPILKAN MODAL SWEETALERT --
     Swal.fire({
         title: 'Form Detail Pembelian',
         html: formHtml,
@@ -263,10 +245,15 @@ $('#btn-proses-pembelian').on('click', function() {
 
                 const barisBaruHtml = `
                     <div class="grid grid-cols-12 gap-x-4 items-center border-b py-2 form-row-baru">
+                    <label class="sr-only">Nama Obat</label>
                         <div class="col-span-3"><select name="obat_id" class="swal2-select m-0 w-full">${obatOptions}</select></div>
+                        <label class="sr-only">Pilih Supplier</label>
                         <div class="col-span-3"><select name="supplier_id" class="swal2-select m-0 w-full">${supplierOptions}</select></div>
+                        <label class="sr-only">Jumlah Pembelian</label>
                         <div class="col-span-2"><input type="number" name="jumlah" class="swal2-input m-0 w-full text-center" value="1"></div>
+                        <label class="sr-only">Harga Beli Satuan</label>
                         <div class="col-span-2"><input type="number" name="harga_beli_satuan" class="swal2-input m-0 w-full text-center" value="0"></div>
+                        <label class="sr-only">Harga Beli Box</label>
                         <div class="col-span-2"><input type="number" name="harga_beli_box" class="swal2-input m-0 w-full text-center" value="0"></div>
                     </div>
                 `;
@@ -292,7 +279,7 @@ $('#btn-proses-pembelian').on('click', function() {
                 if (isNaN(harga_beli_satuan) || harga_beli_satuan < 0) { isValid = false; }
                 if (isNaN(harga_beli_box) || harga_beli_box < 0) { isValid = false; }
 
-                if (isValid) { // Hanya tambahkan jika valid untuk menghindari pengiriman data parsial
+                if (isValid) { 
                     detailItems.push({
                         obat_id: parseInt(obat_id),
                         supplier_id: parseInt(supplier_id),

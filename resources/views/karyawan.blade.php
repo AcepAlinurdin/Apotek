@@ -8,8 +8,6 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body class="bg-gray-100 p-8">
-
-  <!-- Navigasi Utama -->
   <nav class="bg-green-700 text-white p-4 rounded-xl mb-6 flex justify-between items-center shadow-md">
       <h1 class="text-xl font-bold">Apotek Parakan Muncang</h1>
       <div class="space-x-4">
@@ -20,12 +18,8 @@
         <a href="#" class="font-bold underline">Karyawan</a>
       </div>
   </nav>
-
-  <!-- Konten Utama -->
   <div class="max-w-6xl mx-auto bg-white p-8 rounded-lg shadow-xl">
     <h1 class="text-3xl font-bold mb-6 text-gray-800 border-b pb-4">Data Karyawan</h1>
-
-    <!-- Form Tambah Karyawan (Statis, belum berfungsi) -->
     <div class="bg-gray-50 p-6 rounded-lg mb-8 border border-gray-200">
         <h2 class="text-xl font-semibold mb-4 text-gray-700">Tambah Karyawan Baru</h2>
         <form>
@@ -40,8 +34,6 @@
             </button>
         </form>
     </div>
-
-    <!-- Tabel Daftar Karyawan -->
     <div class="overflow-x-auto">
         <table class="w-full border-collapse border border-gray-300">
             <thead>
@@ -55,7 +47,6 @@
                 </tr>
             </thead>
             <tbody class="text-gray-700 text-sm">
-                <!-- Data Karyawan Statis 1 -->
                 <tr class="border-b border-gray-200 hover:bg-gray-100">
                     <td class="py-3 px-6 text-left">1</td>
                     <td class="py-3 px-6 text-left font-medium">Andi Budiman</td>
@@ -67,7 +58,6 @@
                         <button class="bg-gray-400 text-white py-1 px-3 rounded cursor-not-allowed text-xs">Hapus</button>
                     </td>
                 </tr>
-                <!-- Data Karyawan Statis 2 -->
                 <tr class="border-b border-gray-200 hover:bg-gray-100">
                     <td class="py-3 px-6 text-left">2</td>
                     <td class="py-3 px-6 text-left font-medium">Siti Aminah</td>
@@ -79,7 +69,6 @@
                         <button class="bg-gray-400 text-white py-1 px-3 rounded cursor-not-allowed text-xs">Hapus</button>
                     </td>
                 </tr>
-                <!-- Data Karyawan Statis 3 -->
                 <tr class="border-b border-gray-200 hover:bg-gray-100">
                     <td class="py-3 px-6 text-left">3</td>
                     <td class="py-3 px-6 text-left font-medium">Bambang Susanto</td>
@@ -95,6 +84,5 @@
         </table>
     </div>
   </div>
-
 </body>
 </html>

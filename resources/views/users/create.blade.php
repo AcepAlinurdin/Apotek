@@ -1,4 +1,3 @@
-{{-- Ini bisa Anda letakkan di dalam layout utama Anda, contoh menggunakan layout Jetstream --}}
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
@@ -9,8 +8,6 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
-                
-                {{-- Arahkan form ke route 'users.store' yang akan memanggil method store() di UserController --}}
                 <form method="POST" action="{{ route('users.store') }}">
                     @csrf
 
@@ -30,7 +27,6 @@
                         <x-label for="role" value="{{ __('Role / Peran') }}" />
                         <select name="role" id="role" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
                             <option value="">-- Pilih Role --</option>
-                            {{-- Loop semua role yang dikirim dari controller --}}
                             @foreach($roles as $role)
                                 <option value="{{ $role->name }}">{{ $role->name }}</option>
                             @endforeach

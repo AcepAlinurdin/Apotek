@@ -1,17 +1,12 @@
 <x-app-layout>
-    {{-- Slot untuk judul halaman --}}
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             {{ __('Monitoring Stok Obat') }}
         </h2>
     </x-slot>
-
-    {{-- Konten utama halaman --}}
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
-
-                <!-- [BARU] Form Filter Status -->
                 <div class="mb-8 p-4 bg-gray-50 border border-gray-200 rounded-lg">
                     <form action="{{ route('obat.stok') }}" method="GET" class="flex items-end space-x-4">
                         <div>
@@ -30,8 +25,6 @@
                         </div>
                     </form>
                 </div>
-
-                <!-- Tabel 1: Daftar Keseluruhan Obat dengan Status -->
                 <div class="mb-12">
                     <h2 class="text-2xl font-semibold mb-4 text-gray-700">1. Daftar Keseluruhan Stok Obat</h2>
                     <p class="mb-4 text-sm text-gray-600">Tabel ini menampilkan semua obat yang terdaftar beserta status ketersediaan stoknya.</p>
@@ -78,8 +71,6 @@
                         </table>
                     </div>
                 </div>
-
-                <!-- Tabel 2: Rekapitulasi Stok Kritis -->
                 <div>
                     <h2 class="text-2xl font-semibold mb-4 text-red-600">2. Daftar Obat Stok Kritis (&lt; 21)</h2>
                     <p class="mb-4 text-sm text-gray-600">Tabel ini hanya menampilkan obat-obatan yang stoknya menipis dan perlu segera dipesan kembali.</p>

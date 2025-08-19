@@ -11,15 +11,7 @@
 </head>
 
 <body class="bg-gray-100 p-8">
-    <!-- <nav class="bg-green-700 text-white p-4 rounded-xl mb-4 flex justify-between items-center">
-        <div class="space-x-4">
-            <a href="/master_data" class="hover:underline">Master Data</a>
-            <a href="/penjualan" class="font-bold underline">Transaksi</a>
-            <a href="/cek" class="hover:underline">Pengecekan stok</a>
-            <a href="/perhitungan" class="hover:underline">Pembelian</a>
-        </div>
-        <h1 class="text-xl font-bold">Apotek Parakan Muncang</h1>
-    </nav> -->
+  
     <div class="grid grid-cols-2 gap-6">
         {{-- Daftar Obat --}}
         <div class="bg-white p-4 rounded-xl shadow">
@@ -28,7 +20,7 @@
             {{-- Wrapper untuk scroll --}}
             <div class="overflow-y-auto max-h-80">
                 <table class="w-full border-collapse">
-                    <thead class="sticky top-0 bg-gray-200 z-10"> {{-- Header dibuat sticky --}}
+                    <thead class="sticky top-0 bg-gray-200 z-10">
                         <tr>
                             <th class="p-2">Nama Obat</th>
                             <th class="p-2">Harga</th>
@@ -41,7 +33,7 @@
                         <tr class="medicine-row " data-name="{{ $obat->nama_obat }}">
                             <td class="p-2 text-start">{{ $obat->nama_obat }}</td>
                             <td class="p-2 text-center">Rp {{ number_format($obat->harga_satuan, 0, ',', '.') }}</td>
-                            {{-- PERBAIKAN: Menampilkan total_stok hasil agregasi --}}
+                           
                             <td class="p-2 text-center">{{ $obat->total_stok }}</td>
                             <td class="p-2 text-center">
                                 <button
@@ -58,10 +50,8 @@
             </div>
         </div>
 
-        {{-- Keranjang Belanja --}}
         <div class="bg-white p-4 rounded-xl shadow">
             <h2 class="text-lg font-bold mb-2">Keranjang Belanja</h2>
-            {{-- Wrapper untuk scroll --}}
             <div class="overflow-y-auto max-h-72">
                 <table class="w-full border-collapse text-center">
                     <thead class="sticky top-0 bg-gray-200 z-10 "> {{-- Header dibuat sticky --}}
@@ -112,7 +102,6 @@
                 @endif
             </tbody>
         </table>
-        {{-- </div> --}} {{-- Penutup div wrapper scroll untuk Riwayat Penjualan --}}
     </div>
 
     <script>

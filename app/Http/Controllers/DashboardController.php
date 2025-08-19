@@ -8,16 +8,11 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
-    /**
-     * Menampilkan halaman dashboard utama dengan laporan dinamis
-     * berdasarkan peran pengguna dan filter tanggal.
-     */
+    
     public function index(Request $request)
     {
         $user = auth()->user();
-        $viewData = []; // Menyiapkan array untuk dikirim ke view
-
-        // Hanya siapkan data laporan jika role-nya adalah admin atau kepala apotek
+        $viewData = []; 
         if ($user->hasRole('admin') || $user->hasRole('kepala apotek')) {
             
             // =============================================
@@ -33,11 +28,11 @@ class DashboardController extends Controller
             $tahun = $request->input('tahun', date('Y'));
 
             if ($tanggal) {
-                // Jika ada filter tanggal spesifik, gunakan itu
+            
                 $queryPenjualan->whereDate('penjualans.tanggal_penjualan', $tanggal);
                 $laporanPenjualanTitle = 'Laporan Penjualan Tanggal ' . Carbon::parse($tanggal)->format('d F Y');
             } else {
-                // Jika tidak, gunakan filter bulan dan tahun (default bulan ini)
+              
                 $queryPenjualan->whereMonth('penjualans.tanggal_penjualan', $bulan)
                                ->whereYear('penjualans.tanggal_penjualan', $tahun);
                 $laporanPenjualanTitle = 'Laporan Penjualan Bulan ' . Carbon::create()->month($bulan)->format('F') . ' ' . $tahun;
@@ -47,7 +42,6 @@ class DashboardController extends Controller
                 ->select('obats.nama_obat', 'detail_penjualans.jumlah', 'detail_penjualans.subtotal')
                 ->get();
 
-            // Memasukkan data penjualan ke array viewData
             $viewData['penjualanData'] = $penjualanData;
             $viewData['totalPendapatan'] = $penjualanData->sum('subtotal');
             $viewData['laporanPenjualanTitle'] = $laporanPenjualanTitle;
@@ -77,8 +71,7 @@ class DashboardController extends Controller
                 ->get();
             
             $laporanPembelianTitle = 'Laporan Pembelian (' . Carbon::parse($tanggalMulaiPembelian)->format('d/m/y') . ' - ' . Carbon::parse($tanggalAkhirPembelian)->format('d/m/y') . ')';
-                
-            // Memasukkan data pembelian ke array viewData
+           
             $viewData['pembelianData'] = $pembelianData;
             $viewData['totalPengeluaran'] = $pembelianData->sum('subtotal');
             $viewData['laporanPembelianTitle'] = $laporanPembelianTitle;
@@ -86,7 +79,7 @@ class DashboardController extends Controller
             $viewData['filterPembelianAkhir'] = $tanggalAkhirPembelian;
         }
 
-        // Mengirim semua data yang terkumpul ke view 'dashboard'
+       
         return view('dashboard', $viewData);
     }
 }

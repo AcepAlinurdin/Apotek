@@ -4,12 +4,9 @@
             {{ __('Laporan Peramalan & Rencana Pembelian') }}
         </h2>
     </x-slot>
-
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
-
-                <!-- Filter & Opsi -->
                 <div class="mb-6 bg-white p-4 rounded-lg shadow">
                     <h3 class="text-lg font-medium text-gray-800 mb-2">Filter Data Penjualan</h3>
                     <form action="{{ route('obat.rekap') }}" method="GET" class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
@@ -26,10 +23,6 @@
                         </div>
                     </form>
                 </div>
-                
-                ---
-
-                <!-- TABEL BARU: Rencana Pembelian yang bisa diedit -->
                 <div class="mb-12">
                     <h2 class="text-2xl font-semibold mb-4 text-green-800">Rencana Pembelian</h2>
                     <form id="form-pembelian">
@@ -58,10 +51,6 @@
                         </div>
                     </form>
                 </div>
-                
-                ---
-                
-                <!-- TABEL HASIL PERAMALAN (sebagai sumber data) -->
                 <div class="mb-12">
                     <h2 class="text-2xl font-semibold mb-4 text-blue-800">Hasil Perhitungan Fuzzy Mamdani</h2>
                     <div class="overflow-x-auto max-h-96">
@@ -103,7 +92,6 @@
                         </table>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>

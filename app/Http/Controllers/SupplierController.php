@@ -7,9 +7,6 @@ use Illuminate\Http\Request;
 
 class SupplierController extends Controller
 {
-    /**
-     * Menampilkan daftar supplier dan formulir.
-     */
     public function index()
     {
         $suppliers = Supplier::latest()->paginate(10);
@@ -20,9 +17,7 @@ class SupplierController extends Controller
         ]);
     }
 
-    /**
-     * Menyimpan supplier baru ke database.
-     */
+
     public function store(Request $request)
     {
         $request->validate([
@@ -37,28 +32,19 @@ class SupplierController extends Controller
                          ->with('success', 'Supplier baru berhasil ditambahkan.');
     }
 
-    /**
-     * Menampilkan data supplier beserta obat-obatnya dalam format JSON.
-     */
     public function show(Supplier $supplier)
     {
-        // Load relasi obat
+     
         $supplier->load('obats');
         return response()->json($supplier);
     }
     
-    /**
-     * Menampilkan formulir untuk mengedit data supplier di halaman index.
-     */
     public function edit(Supplier $supplier)
     {
         $suppliers = Supplier::latest()->paginate(10);
         return view('suppliers.index', compact('suppliers', 'supplier'));
     }
 
-    /**
-     * Memperbarui data supplier di dalam database.
-     */
     public function update(Request $request, Supplier $supplier)
     {
         $request->validate([
@@ -73,9 +59,6 @@ class SupplierController extends Controller
                          ->with('success', 'Data supplier berhasil diperbarui.');
     }
 
-    /**
-     * Menghapus supplier dari database.
-     */
     public function destroy(Supplier $supplier)
     {
         $supplier->delete();

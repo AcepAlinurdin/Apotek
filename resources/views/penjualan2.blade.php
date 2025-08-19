@@ -1,17 +1,17 @@
 <x-app-layout>
-    {{-- Slot untuk judul halaman --}}
+   
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             {{ __('Transaksi Penjualan') }}
         </h2>
     </x-slot>
 
-    {{-- Konten utama halaman --}}
+  
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-                {{-- Kolom Kiri: Daftar Obat --}}
+               
                 <div class="bg-white p-6 rounded-xl shadow-lg">
                     <h2 class="text-xl font-bold mb-4 text-gray-800">Daftar Obat</h2>
                     <input type="text" id="search-medicine" placeholder="Cari obat..." class="w-full p-2 border border-gray-300 rounded-md mb-4 focus:ring-indigo-500 focus:border-indigo-500" />
@@ -122,14 +122,11 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         $(document).ready(function () {
-            // Setup CSRF token untuk semua request AJAX
             $.ajaxSetup({
                 headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') }
             });
 
-            let cart = {}; // Variabel untuk menyimpan keranjang belanja
-
-            // Fungsi untuk mengupdate tampilan keranjang dan total harga
+            let cart = {}; 
             const renderCart = () => {
                 const cartContainer = $('#cart-items');
                 cartContainer.empty();
@@ -159,7 +156,6 @@
                 $('#total-price').text(`Rp ${totalPrice.toLocaleString('id-ID')}`);
             };
 
-            // Event listener untuk tombol 'Tambah' di daftar obat
             $('#medicine-list').on('click', '.add-to-cart-btn', function () {
                 const button = $(this);
                 const obatId = button.data('id');
@@ -174,7 +170,6 @@
                 renderCart();
             });
 
-            // Event listener untuk mengubah jumlah barang di keranjang
             $('#cart-items').on('change', '.cart-quantity', function () {
                 const input = $(this);
                 const obatId = input.closest('tr').data('id');
@@ -183,19 +178,19 @@
                 if (cart[obatId] && newQuantity > 0) {
                     cart[obatId].quantity = newQuantity;
                 } else {
-                    input.val(cart[obatId].quantity); // Kembalikan ke nilai semula jika tidak valid
+                    input.val(cart[obatId].quantity);
                 }
                 renderCart();
             });
 
-            // Event listener untuk tombol 'Hapus' di keranjang
+          
             $('#cart-items').on('click', '.remove-btn', function () {
                 const obatId = $(this).closest('tr').data('id');
                 delete cart[obatId];
                 renderCart();
             });
 
-            // Event listener untuk tombol 'Checkout'
+        
             $('#checkout-btn').on('click', function () {
                 const cartItems = Object.values(cart);
                 if (cartItems.length === 0) {
@@ -231,7 +226,7 @@
                 });
             });
             
-            // Event listener untuk fitur pencarian obat
+          
             $('#search-medicine').on('keyup', function () {
                 const filter = $(this).val().toLowerCase();
                 $('.medicine-row').each(function () {
@@ -240,7 +235,7 @@
                 });
             });
 
-            // Event listener untuk tombol detail di riwayat penjualan
+         
             $('#sales-history').on('click', '.detail-btn', function() {
                 const data = $(this).data();
                 const detailHtml = `
@@ -263,7 +258,7 @@
                 });
             });
 
-            // Panggil renderCart() saat halaman pertama kali dimuat
+           
             renderCart();
         });
     </script>
