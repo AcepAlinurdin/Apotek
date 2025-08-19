@@ -89,7 +89,7 @@
                         <tbody id="sales-history">
                             @forelse($riwayatPenjualans as $detail)
                             <tr>
-                                <td class="p-3 text-sm text-center text-gray-600">{{ \Carbon\Carbon::parse($detail->penjualan->tanggal_penjualan)->format('d-m-Y H:i') }}</td>
+                                <td class="p-3 text-sm text-center text-gray-600">{{ \Carbon\Carbon::parse($detail->penjualan->tanggal_penjualan)->format('d-m-Y') }}</td>
                                 <td class="p-3 text-sm text-left text-gray-700">{{ $detail->obat->nama_obat ?? 'Obat Dihapus' }}</td>
                                 <td class="p-3 text-sm text-center text-gray-600">{{ $detail->jumlah }}</td>
                                 <td class="p-3 text-sm text-right text-gray-600">Rp {{ number_format($detail->subtotal, 0, ',', '.') }}</td>

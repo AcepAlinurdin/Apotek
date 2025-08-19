@@ -9,13 +9,18 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
                 
-                {{-- [MODIFIED] Menggunakan Alpine.js untuk menyembunyikan/menampilkan form --}}
                 <div x-data="{ open: {{ $user->exists || $errors->any() ? 'true' : 'false' }} }">
-                    {{-- Tombol untuk menampilkan form tambah pengguna --}}
-                    <div class="mb-4" x-show="!open">
-                        <x-button @click="open = true">
-                            Tambah Pengguna Baru
-                        </x-button>
+                    {{-- Tombol Tambah Pengguna & Kembali ke Master Data --}}
+                    <div class="flex justify-between items-center mb-4">
+                        <div x-show="!open">
+                            <x-button @click="open = true">
+                                Tambah Pengguna Baru
+                            </x-button>
+                        </div>
+                        {{-- Tombol Kembali yang selalu terlihat --}}
+                        <a href="{{ route('obat.master.index') }}" class="text-sm text-blue-600 hover:underline ml-auto">
+                            &larr; Kembali ke Master Data
+                        </a>
                     </div>
 
                     {{-- Formulir Dinamis untuk Tambah & Edit Pengguna --}}
@@ -66,7 +71,6 @@
                                 <div>
                                     <div>
                                         <x-label for="password" value="Password" />
-                                        {{-- [FIXED] Mengganti x-input dengan input HTML standar untuk memastikan bisa diklik --}}
                                         <input id="password" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" type="password" name="password" autocomplete="new-password" @if(!$user->exists) required @endif>
                                         @if ($user->exists)
                                             <p class="text-xs text-gray-500 mt-1">Kosongkan jika tidak ingin mengubah password.</p>
@@ -75,7 +79,6 @@
 
                                     <div class="mt-4">
                                         <x-label for="password_confirmation" value="Konfirmasi Password" />
-                                        {{-- [FIXED] Mengganti x-input dengan input HTML standar untuk memastikan bisa diklik --}}
                                         <input id="password_confirmation" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" type="password" name="password_confirmation" autocomplete="new-password" @if(!$user->exists) required @endif>
                                     </div>
                                 </div>
