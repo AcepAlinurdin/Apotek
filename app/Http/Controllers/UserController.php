@@ -55,6 +55,7 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
+        $this->authorize('update', $user);
         $users = User::where('id', '!=', auth()->id())->latest()->paginate(10);
         
         // --- LOGIKA PENYARINGAN ROLE ---
@@ -80,6 +81,7 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
+        $this->authorize('update', $user);
         $requestedRole = $request->input('role');
 
         // Keamanan di backend: Gunakan Gate untuk otorisasi

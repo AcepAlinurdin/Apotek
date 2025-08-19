@@ -9,6 +9,7 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
                 
+                {{-- Menggunakan Alpine.js untuk menyembunyikan/menampilkan form --}}
                 <div x-data="{ open: {{ $user->exists || $errors->any() ? 'true' : 'false' }} }">
                     {{-- Tombol Tambah Pengguna & Kembali ke Master Data --}}
                     <div class="flex justify-between items-center mb-4">
@@ -24,8 +25,8 @@
                     </div>
 
                     {{-- Formulir Dinamis untuk Tambah & Edit Pengguna --}}
-                    <div class="mb-8 p-4 bg-gray-50 border border-gray-200 rounded-lg" x-show="open" x-transition>
-                        <h3 class="text-lg font-semibold mb-4">
+                    <div class="mb-8 p-6 bg-gray-50 border border-gray-200 rounded-lg" x-show="open" x-transition>
+                        <h3 class="text-lg font-semibold mb-4 text-gray-800">
                             @if ($user->exists)
                                 Edit Data Pengguna
                             @else
@@ -128,12 +129,16 @@
                                         @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                                        <a href="{{ route('users.edit', $item->id) }}" class="text-indigo-600 hover:text-indigo-900 mr-4">Edit</a>
-                                        <form action="{{ route('users.destroy', $item->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pengguna ini?');">
+                                        {{-- Gunakan @can untuk memeriksa izin sebelum menampilkan tombol Edit --}}
+                                        @can('update', $item)
+                                            <a href="{{ route('users.edit', $item->id) }}" class="text-indigo-600 hover:text-indigo-900 mr-4">Edit</a>
+                                        @endcan
+                                        
+                                        <!-- <form action="{{ route('users.destroy', $item->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pengguna ini?');">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="text-red-600 hover:text-red-900">Hapus</button>
-                                        </form>
+                                        </form> -->
                                     </td>
                                 </tr>
                             @empty

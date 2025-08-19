@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 // use Illuminate\Support\Facades\Gate;
+use App\Models\User; // <-- Pastikan ini ada
+use App\Policies\UserPolicy; 
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 
@@ -14,9 +16,9 @@ class AuthServiceProvider extends ServiceProvider
      * @var array<class-string, class-string>
      */
     protected $policies = [
-        //
+        // Daftarkan UserPolicy di sini
+        User::class => UserPolicy::class,
     ];
-
     /**
      * Register any authentication / authorization services.
      */
