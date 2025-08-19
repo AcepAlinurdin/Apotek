@@ -11,6 +11,26 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
 
+                <!-- [BARU] Form Filter Status -->
+                <div class="mb-8 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                    <form action="{{ route('obat.stok') }}" method="GET" class="flex items-end space-x-4">
+                        <div>
+                            <label for="status" class="block text-sm font-medium text-gray-700">Filter Berdasarkan Status</label>
+                            <select name="status" id="status" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                <option value="">Semua Status</option>
+                                <option value="menipis" {{ ($statusFilter ?? '') == 'menipis' ? 'selected' : '' }}>Stok Menipis</option>
+                                <option value="normal" {{ ($statusFilter ?? '') == 'normal' ? 'selected' : '' }}>Normal</option>
+                                <option value="banyak" {{ ($statusFilter ?? '') == 'banyak' ? 'selected' : '' }}>Stok Terlalu Banyak</option>
+                            </select>
+                        </div>
+                        <div>
+                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md mt-6">
+                                Filter
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
                 <!-- Tabel 1: Daftar Keseluruhan Obat dengan Status -->
                 <div class="mb-12">
                     <h2 class="text-2xl font-semibold mb-4 text-gray-700">1. Daftar Keseluruhan Stok Obat</h2>
@@ -51,7 +71,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="5" class="text-center p-4">Tidak ada data obat di database.</td>
+                                        <td colspan="5" class="text-center p-4">Tidak ada data obat yang cocok dengan filter.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -61,8 +81,8 @@
 
                 <!-- Tabel 2: Rekapitulasi Stok Kritis -->
                 <div>
-                    <h2 class="text-2xl font-semibold mb-4 text-red-600">2. Daftar Obat Stok Kritis (&lt; 20)</h2>
-                     <p class="mb-4 text-sm text-gray-600">Tabel ini hanya menampilkan obat-obatan yang stoknya menipis dan perlu segera dipesan kembali.</p>
+                    <h2 class="text-2xl font-semibold mb-4 text-red-600">2. Daftar Obat Stok Kritis (&lt; 21)</h2>
+                    <p class="mb-4 text-sm text-gray-600">Tabel ini hanya menampilkan obat-obatan yang stoknya menipis dan perlu segera dipesan kembali.</p>
                     <div class="overflow-x-auto max-h-96">
                         <table class="w-full border-collapse border border-red-300">
                             <thead>
@@ -70,6 +90,7 @@
                                     <th class="py-3 px-6 text-left">No</th>
                                     <th class="py-3 px-6 text-left">Kategori</th>
                                     <th class="py-3 px-6 text-left">Nama Obat</th>
+                                    <th class="py-3 px-6 text-center">Sisa Stok</th>
                                 </tr>
                             </thead>
                             <tbody class="text-gray-700 text-sm">
@@ -78,10 +99,11 @@
                                         <td class="py-3 px-6 text-left">{{ $loop->iteration }}</td>
                                         <td class="py-3 px-6 text-left">{{ $obat->kategori }}</td>
                                         <td class="py-3 px-6 text-left font-medium">{{ $obat->nama_obat }}</td>
+                                        <td class="py-3 px-6 text-center font-bold">{{ $obat->stok }}</td>
                                     </tr>
                                 @empty
                                     <tr class="border-b border-gray-200">
-                                        <td colspan="3" class="text-center p-6 text-gray-500">Aman! Tidak ada obat dengan stok di bawah 20.</td>
+                                        <td colspan="4" class="text-center p-6 text-gray-500">Aman! Tidak ada obat dengan stok di bawah 21.</td>
                                     </tr>
                                 @endforelse
                             </tbody>

@@ -120,16 +120,40 @@ protected function processNewCheckout(array $cartItems)
             'cartItems.*.quantity' => 'required|integer|min:1'
         ]);
     }
-public function showStok()
+// Di dalam file app/Http/Controllers/ObatController.php
+
+public function showStok(Request $request)
 {
-    // Mengambil semua data obat, diurutkan berdasarkan nama
-    $semua_obat = \App\Models\Obat::with('supplier')->orderBy('nama_obat', 'asc')->get();
+    // Ambil nilai filter 'status' dari URL, jika ada.
+    $statusFilter = $request->input('status');
+
+    // Mulai query untuk mengambil semua data obat.
+    $query = \App\Models\Obat::with('supplier');
+
+    // Terapkan filter HANYA jika $statusFilter tidak kosong.
+    $query->when($statusFilter, function ($q, $status) {
+        if ($status == 'menipis') {
+            // Sesuai dengan logika di view Anda (< 20)
+            return $q->where('stok', '<', 20);
+        }
+        if ($status == 'normal') {
+            // Sesuai dengan logika di view Anda (>= 21 dan <= 70)
+            return $q->whereBetween('stok', [21, 70]);
+        }
+        if ($status == 'banyak') {
+            // Sesuai dengan logika di view Anda (> 70)
+            return $q->where('stok', '>', 70);
+        }
+    });
+
+    // Eksekusi query yang sudah difilter.
+    $semua_obat = $query->orderBy('nama_obat', 'asc')->get();
     
-    // Mengambil data obat yang stoknya kritis (kurang dari 20), diurutkan dari yang paling sedikit
+    // Query untuk stok kritis tidak berubah.
     $stok_kurang = \App\Models\Obat::with('supplier')->where('stok', '<', 21)->orderBy('stok', 'asc')->get();
 
-    // Kirim kedua data ke view 'cek_stok'
-    return view('cek_stok', compact('semua_obat', 'stok_kurang'));
+    // Kirim semua data, TERMASUK nilai filter saat ini, ke view.
+    return view('cek_stok', compact('semua_obat', 'stok_kurang', 'statusFilter'));
 }
 
     // =================================================================
