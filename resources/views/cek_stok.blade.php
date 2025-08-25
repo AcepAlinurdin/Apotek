@@ -72,7 +72,7 @@
                     </div>
                 </div>
                 <div>
-                    <h2 class="text-2xl font-semibold mb-4 text-red-600">2. Daftar Obat Stok Kritis (&lt; 21)</h2>
+                    <h2 class="text-2xl font-semibold mb-4 text-red-600">2. Daftar Obat Stok Kritis (&lt; 20)</h2>
                     <p class="mb-4 text-sm text-gray-600">Tabel ini hanya menampilkan obat-obatan yang stoknya menipis dan perlu segera dipesan kembali.</p>
                     <div class="overflow-x-auto max-h-96">
                         <table class="w-full border-collapse border border-red-300">

@@ -9,14 +9,15 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
 
-                <!-- <div class="mb-6 bg-blue-50 border border-blue-200 p-4 rounded-lg">
+                <div class="mb-6 bg-blue-50 border border-blue-200 p-4 rounded-lg">
                     <h3 class="text-lg font-medium text-gray-800 mb-1">Rekomendasi Pembelian Berikutnya</h3>
                     <p class="text-sm text-gray-600">
                         Perhitungan ini dibuat berdasarkan data penjualan pada periode tetap:
                         <strong>1 Oktober 2023</strong> sampai <strong>31 Desember 2023</strong>.
                     </p>
-                </div> -->
+                </div>
                 
+                <!-- TABEL 1: HASIL PERHITUNGAN FUZZY -->
                 <div class="mb-12">
                     <h2 class="text-2xl font-semibold mb-4 text-blue-800">Hasil Perhitungan Fuzzy (Obat Stok Menipis)</h2>
                     <div class="overflow-x-auto max-h-96">
@@ -57,21 +58,34 @@
                     </div>
                 </div>
     
+                <!-- KERANJANG RENCANA PEMBELIAN -->
                 <div class="mb-6 bg-gray-50 p-4 rounded-lg shadow-inner">
-                    <h3 class="text-lg font-medium text-gray-800 mb-2">Keranjang Rencana Pembelian</h3>
+                    <h3 class="text-lg font-medium text-gray-800 mb-2">Keranjang Rencana Pembelian (Dari Rekomendasi)</h3>
                     <div id="selected-obat-list" class="space-y-2 mb-4 min-h-[50px]">
                         <p class="text-gray-500">Pilih obat dari tabel di atas untuk ditambahkan ke sini.</p>
                     </div>
 
                     <div class="flex space-x-4">
-                        <button type="button" id="btn-buat-rencana" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md">
-                            Buat Rincian Pembelian
-                        </button>
+                        @role('kepala apotek')
+                            {{-- Tampilan untuk Kepala Apotek: Dua Tombol --}}
+                            <button type="button" id="btn-buat-rencana" class="w-1/2 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md">
+                                Buat Rincian (Rekomendasi)
+                            </button>
+                            <button type="button" id="btn-pembelian-manual" class="w-1/2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-md">
+                                Pembelian Manual
+                            </button>
+                        @else
+                            {{-- Tampilan untuk Apoteker (atau role lain): Satu Tombol Penuh --}}
+                            <button type="button" id="btn-buat-rencana" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md">
+                                Buat Rincian (Rekomendasi)
+                            </button>
+                        @endrole
                     </div>
                 </div>
 
                 <hr class="my-12 border-t-2 border-gray-200">
 
+                <!-- TABEL 2: DAFTAR SEMUA OBAT -->
                 <div class="mb-12">
                     <h2 class="text-2xl font-semibold mb-4 text-gray-800">Daftar Stok Semua Obat</h2>
                     <div class="overflow-x-auto" style="max-height: 500px;">
@@ -117,10 +131,13 @@
         // Variabel global
         const hasilPeramalan = @json($hasilPeramalan);
         const suppliers = @json($suppliers ?? []);
-        const semuaObat = @json($semuaObatForDropdown ?? []);
+        const semuaObat = @json($semuaObat ?? []);
         let selectedObat = {};
 
-        // Event listener ketika checkbox diubah
+        // =====================================================================
+        // == LOGIKA UNTUK PEMBELIAN BERDASARKAN REKOMENDASI FUZZY
+        // =====================================================================
+
         $('input[name="obat_terpilih[]"]').on('change', function() {
             const obatId = $(this).val();
             const obatData = hasilPeramalan.find(o => o.obat_id == obatId);
@@ -133,7 +150,6 @@
             renderSelectedObatList();
         });
 
-        // Fungsi untuk menampilkan daftar obat terpilih di keranjang
         function renderSelectedObatList() {
             const container = $('#selected-obat-list');
             container.empty();
@@ -149,16 +165,29 @@
             }
         }
         
-        // Event listener untuk tombol "Buat Rincian Pembelian"
         $('#btn-buat-rencana').on('click', function() {
             const obatTerpilih = Object.values(selectedObat);
-            
             if (obatTerpilih.length === 0) {
                 Swal.fire({ icon: 'warning', title: 'Keranjang Kosong', text: 'Pilih minimal satu obat dari tabel rekomendasi!' });
                 return;
             }
+            // Memanggil fungsi utama untuk menampilkan form
+            showPurchaseForm(obatTerpilih, true);
+        });
 
-            // Membangun HTML untuk form di dalam SweetAlert
+        // =====================================================================
+        // == LOGIKA BARU UNTUK TOMBOL PEMBELIAN MANUAL
+        // =====================================================================
+        $('#btn-pembelian-manual').on('click', function() {
+            // Memanggil fungsi utama dengan array kosong, karena dimulai dari nol
+            showPurchaseForm([], false);
+        });
+
+
+        // =====================================================================
+        // == FUNGSI UTAMA UNTUK MENAMPILKAN FORM DAN MEMPROSES PEMBELIAN
+        // =====================================================================
+        function showPurchaseForm(items, isFromRekomendasi) {
             let formHtml = `
                 <div class="text-left mb-4">
                     <label for="status_pembelian" class="block text-sm font-medium text-gray-700">Status Pembayaran</label>
@@ -170,7 +199,8 @@
                 <div id="form-pembelian-detail" class="space-y-4 text-left">
             `;
 
-            obatTerpilih.forEach(item => {
+            // Render item yang sudah ada (dari rekomendasi)
+            items.forEach(item => {
                 let supplierOptions = '<option value="">Pilih Supplier</option>';
                 suppliers.forEach(supplier => {
                     const isSelected = supplier.id == item.supplier_id ? 'selected' : '';
@@ -189,23 +219,80 @@
             });
             formHtml += `</div>`; 
 
-            // Menampilkan SweetAlert dengan form
+            // Tombol untuk menambah obat lain
+            formHtml += `
+                <div class="text-left mt-4">
+                    <button type="button" id="tambah-obat-btn" class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-1 px-3 rounded text-sm">
+                        + Tambah Obat Lain
+                    </button>
+                </div>
+            `;
+
             Swal.fire({
-                title: 'Form Detail Pembelian',
+                title: isFromRekomendasi ? 'Form Rincian Pembelian' : 'Form Pembelian Manual',
                 html: formHtml,
                 width: '900px',
                 showCancelButton: true,
                 confirmButtonText: 'Ya, Proses Pembelian',
                 cancelButtonText: 'Batal',
                 focusConfirm: false,
-                preConfirm: () => { // Validasi sebelum form disubmit
+                didOpen: () => {
+                    const popup = Swal.getPopup();
+                    
+                    // Fungsi untuk menambah baris baru
+                    function addNewRow() {
+                        let obatOptions = '<option value="" selected>-- Pilih Obat --</option>';
+                        semuaObat.forEach(obat => {
+                            obatOptions += `<option value="${obat.id}" data-supplier-id="${obat.supplier_id}" data-harga-satuan="${obat.harga_satuan}" data-harga-box="${obat.harga_box || 0}">${obat.nama_obat}</option>`;
+                        });
+                        
+                        let supplierOptions = '<option value="" selected>-- Pilih Supplier --</option>';
+                        suppliers.forEach(supplier => {
+                            supplierOptions += `<option value="${supplier.id}">${supplier.nama_supplier}</option>`;
+                        });
+
+                        const barisBaruHtml = `
+                            <div class="grid grid-cols-12 gap-x-4 items-center border-b py-2 form-row-baru">
+                                <div class="col-span-3"><select name="obat_id" class="swal2-select m-0 w-full obat-select-baru">${obatOptions}</select></div>
+                                <div class="col-span-3"><select name="supplier_id" class="swal2-select m-0 w-full supplier-select-baru">${supplierOptions}</select></div>
+                                <div class="col-span-2"><input type="number" name="jumlah" class="swal2-input m-0 w-full text-center" value="1"></div>
+                                <div class="col-span-2"><input type="number" name="harga_beli_satuan" class="swal2-input m-0 w-full text-center" value="0"></div>
+                                <div class="col-span-1"><input type="number" name="harga_beli_box" class="swal2-input m-0 w-full text-center" value="0"></div>
+                                <div class="col-span-1 text-center"><button type="button" class="text-red-500 hover:text-red-700 hapus-baris-btn font-bold">X</button></div>
+                            </div>
+                        `;
+                        $('#form-pembelian-detail').append(barisBaruHtml);
+                    }
+
+                    // Jika ini form manual, langsung tambahkan satu baris kosong
+                    if (!isFromRekomendasi) {
+                        addNewRow();
+                    }
+
+                    $(popup).on('click', '#tambah-obat-btn', addNewRow);
+
+                    $(popup).on('change', '.obat-select-baru', function() {
+                        const selectedOption = $(this).find('option:selected');
+                        const row = $(this).closest('.form-row-baru');
+                        row.find('.supplier-select-baru').val(selectedOption.data('supplier-id'));
+                        row.find('input[name="harga_beli_satuan"]').val(selectedOption.data('harga-satuan'));
+                        row.find('input[name="harga_beli_box"]').val(selectedOption.data('harga-box'));
+                    });
+
+                    $(popup).on('click', '.hapus-baris-btn', function() {
+                        $(this).closest('.form-row-baru').remove();
+                    });
+                },
+                preConfirm: () => {
                     const detailItems = [];
-                    const formRows = document.querySelectorAll('.form-row');
+                    const formRows = document.querySelectorAll('.form-row, .form-row-baru');
                     const status = document.querySelector('#status_pembelian').value;
                     let isValid = true;
 
                     formRows.forEach(row => {
-                        const obat_id = row.dataset.obatId;
+                        const obatSelect = row.querySelector('select[name="obat_id"]');
+                        const obat_id = obatSelect ? obatSelect.value : row.dataset.obatId;
+                        
                         const supplier_id = row.querySelector('select[name="supplier_id"]').value;
                         const jumlah = parseInt(row.querySelector('input[name="jumlah"]').value);
                         const harga_beli_satuan = parseFloat(row.querySelector('input[name="harga_beli_satuan"]').value);
@@ -227,14 +314,17 @@
                     });
 
                     if (!isValid) {
-                        Swal.showValidationMessage('Pastikan semua data (supplier, jumlah, harga) diisi dengan benar.');
+                        Swal.showValidationMessage('Pastikan semua data (obat, supplier, jumlah, harga) diisi dengan benar.');
+                        return false;
+                    }
+                    if (detailItems.length === 0) {
+                        Swal.showValidationMessage('Tidak ada item untuk dibeli.');
                         return false;
                     }
                     return { detail_pembelian: detailItems, status: status };
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Jika konfirmasi, kirim data via AJAX
                     const dataToSend = {
                         tanggal_pembelian: new Date().toISOString().slice(0, 10),
                         status: result.value.status,
@@ -267,7 +357,7 @@
                     });
                 }
             });
-        });
+        }
 
         function printReceipt(pembelianId, purchaseData, suppliers) {
             let totalHarga = 0;
@@ -276,10 +366,14 @@
             purchaseData.detail_pembelian.forEach((item, index) => {
                 const subtotal = item.jumlah * item.harga_beli_satuan;
                 totalHarga += subtotal;
+                // Cari nama obat dari array 'semuaObat' karena 'selectedObat' mungkin tidak lengkap
+                const obatInfo = semuaObat.find(o => o.id == item.obat_id);
+                const namaObat = obatInfo ? obatInfo.nama_obat : 'N/A';
+
                 detailRows += `
                     <tr>
                         <td>${index + 1}</td>
-                        <td>${selectedObat[item.obat_id]?.nama_obat || 'N/A'}</td>
+                        <td>${namaObat}</td>
                         <td class="text-right">${item.jumlah}</td>
                         <td class="text-right">Rp ${number_format(item.harga_beli_satuan)}</td>
                         <td class="text-right">Rp ${number_format(subtotal)}</td>

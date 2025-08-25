@@ -255,4 +255,20 @@ class PembelianController extends Controller
     // Kirim data pembelian ke view 'pembelian.cetak'
     return view('pembelian.cetak', compact('pembelian'));
 }
+public function updateStatusLunas(Pembelian $pembelian)
+    {
+        if (!auth()->user()->hasAnyRole(['admin', 'kepala apotek'])) {
+            return response()->json(['success' => false, 'message' => 'Anda tidak memiliki akses.'], 403);
+        }
+
+        try {
+            $pembelian->status = 'Lunas';
+            $pembelian->save();
+            
+            return response()->json(['success' => true, 'message' => 'Status pembelian berhasil diubah menjadi Lunas.']);
+
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Terjadi kesalahan saat update.'], 500);
+        }
+    }
 }

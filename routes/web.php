@@ -143,6 +143,7 @@ Route::middleware([
         Route::resource("users", App\Http\Controllers\UserController::class);
     });
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::patch('/pembelian/{pembelian}/lunas', [PembelianController::class, 'updateStatusLunas'])->name('pembelian.update.lunas')->middleware('auth');
 }); // <-- Tambahkan penutup kurung kurawal dan tanda kurung tutup di sini
 
 // Rute-rute lama yang tidak terpakai atau sudah dipindahkan bisa dihapus.
