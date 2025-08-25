@@ -74,6 +74,7 @@ Route::middleware([
         PembelianController::class,
         "simpan",
     ])->name("pembelian.simpan");
+    // Route::get('/pembelian/{pembelian}/cetak', [PembelianController::class, 'cetak'])->name('pembelian.cetak');
     // --- RUTE KHUSUS UNTUK ADMIN & KEPALA APOTEK ---
     // Apoteker tidak akan bisa mengakses rute di dalam grup ini
     Route::middleware(["role:admin|kepala apotek"])->group(function () {

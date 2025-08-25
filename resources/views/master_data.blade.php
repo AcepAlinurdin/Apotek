@@ -72,14 +72,29 @@
                                     </select>
                                     <div class="text-red-500 text-xs mt-1 error-text error-supplier"></div>
                                 </div>
-
+<!-- 
                                 <div class="md:col-span-1">
                                     <label for="stok" class="block text-sm font-medium text-gray-700">Stok (qty)</label>
                                     <input id="stok" name="stok" type="number" placeholder="0"
                                         class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
                                     <div class="text-red-500 text-xs mt-1 error-text error-stok"></div>
+                                </div> -->
+ <div class="md:col-span-1 col-span-2 grid grid-cols-3 gap-2">
+                                <div class="col-span-2">
+                                    <label for="stok" class="block text-sm font-medium text-gray-700">Stok</label>
+                                    <input id="stok" name="stok" type="number" placeholder="0"
+                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                                    <div class="text-red-500 text-xs mt-1 error-text error-stok"></div>
                                 </div>
-
+                                <div>
+                                    <label for="satuan" class="block text-sm font-medium text-gray-700">Satuan</label>
+                                    <select id="satuan" name="satuan" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                                        <option value="pcs" selected>pcs</option>
+                                        <option value="box">box</option>
+                                    </select>
+                                    <div class="text-red-500 text-xs mt-1 error-text error-satuan"></div>
+                                </div>
+                            </div>
                                 <div class="md:col-span-1">
                                     <label for="harga_satuan" class="block text-sm font-medium text-gray-700">Harga
                                         Satuan</label>
@@ -140,7 +155,7 @@
                                     <td class="py-3 px-6 text-left font-medium">{{ $obat->nama_obat }}</td>
                                     <td class="py-3 px-6 text-left">{{ $obat->kategori }}</td>
                                     <td class="py-3 px-6 text-left">{{ $obat->supplier?->nama_supplier ?? 'N/A' }}</td>
-                                    <td class="py-3 px-6 text-center font-bold">{{ $obat->stok }}</td>
+                                    <td class="py-3 px-6 text-center font-bold">{{ $obat->stok }} {{ $obat->satuan }}</td>
                                     <td class="py-3 px-6 text-right">Rp
                                         {{ number_format($obat->harga_satuan, 0, ',', '.') }}</td>
                                     <td class="py-3 px-6 text-right">Rp

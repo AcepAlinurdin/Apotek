@@ -160,6 +160,7 @@ public function showStok(Request $request)
         'nama_obat'    => $request->nama_obat,
         'kategori'     => $request->kategori,
         'stok'         => $request->stok,
+        'satuan'       => $request->satuan,
         'harga_satuan' => $request->harga_satuan,
         'harga_box'    => $request->harga_box,
     ]);
@@ -180,6 +181,7 @@ public function masterUpdate(Request $request, $id)
         'kategori'     => 'required|string|max:255',
         'supplier'     => 'required|string|max:255',
         'stok'         => 'required|integer|min:0',
+        'satuan' => 'required|string|in:pcs,box', 
         'harga_satuan' => 'required|numeric|min:0',
         'harga_box'    => 'nullable|numeric|min:0',
     ]);
@@ -194,6 +196,7 @@ public function masterUpdate(Request $request, $id)
         'nama_obat'    => $request->nama_obat,
         'kategori'     => $request->kategori,
         'stok'         => $request->stok,
+        
         'harga_satuan' => $request->harga_satuan,
         'harga_box'    => $request->harga_box,
     ]);

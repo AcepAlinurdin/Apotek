@@ -11,112 +11,109 @@ use App\Models\Penjualan;
 use App\Models\DetailPenjualan;
 use App\Models\Pembelian;
 use App\Models\DetailPembelian;
+use Carbon\Carbon; // 1. Tambahkan use Carbon
 
 class PembelianController extends Controller
 {
     public function rekap(Request $request)
-    {
+{
+    $tanggalMulai = Carbon::create(2023, 10, 1)->startOfDay(); // 1 Oktober 2023
+    $tanggalAkhir = Carbon::create(2023, 12, 31)->endOfDay();
+    $suppliers = Supplier::orderBy('nama_supplier', 'asc')->get();
+    $semuaObatForDropdown = Obat::orderBy('nama_obat', 'asc')->get(['id', 'nama_obat', 'supplier_id', 'harga_satuan', 'harga_box']);
+    
+    $obatStokMenipis = Obat::with('supplier')->where('stok', '<', 21)->get();
+    $hasilPeramalan = [];
+    
+    foreach ($obatStokMenipis as $obat) {
+        $stokSaatIni = $obat->stok;
+        $totalPenjualanPeriode = DetailPenjualan::where('obat_id', $obat->id)
+            ->whereHas('penjualan', function($q) use ($tanggalMulai, $tanggalAkhir) {
+                $q->whereBetween('tanggal_penjualan', [$tanggalMulai, $tanggalAkhir]);
+            })
+            ->sum('jumlah');
 
-        $tanggalMulai = $request->input('tanggal_mulai');
-        $tanggalAkhir = $request->input('tanggal_akhir');
-        $suppliers = Supplier::orderBy('nama_supplier', 'asc')->get();
-        $semuaObatForDropdown = Obat::orderBy('nama_obat', 'asc')->get(['id', 'nama_obat', 'supplier_id', 'harga_satuan', 'harga_box']);
+        $rekomendasi = $this->jalankanMesinFuzzy($totalPenjualanPeriode, $stokSaatIni, $obat);
         
-        if (!$tanggalMulai || !$tanggalAkhir) {
-            return view('perhitungan', [
-                'hasilPeramalan' => [],
-                'tanggalMulai' => $tanggalMulai,
-                'tanggalAkhir' => $tanggalAkhir,
-                'suppliers' => $suppliers,
-                'semuaObat' => $semuaObatForDropdown
-            ]);
+        if ($rekomendasi > 0) {
+             $hasilPeramalan[] = [
+                'obat_id' => $obat->id,
+                'nama_obat' => $obat->nama_obat,
+                'supplier' => $obat->supplier->nama_supplier ?? 'N/A',
+                'supplier_id' => $obat->supplier_id,
+                'kategori' => $obat->kategori,
+                'stok_saat_ini' => $stokSaatIni,
+                'total_penjualan_periode' => $totalPenjualanPeriode,
+                'rekomendasi_pembelian' => $rekomendasi,
+                'harga_box' => $obat->harga_box,
+                'harga_pcs' => $obat->harga_satuan,
+            ];
         }
-
-
-        $fuzzyParams = $this->getFuzzyParamsFromDB($tanggalMulai, $tanggalAkhir);
-        $obatStokMenipis = Obat::with('supplier')->where('stok', '<', 21)->get();
-        $hasilPeramalan = [];
-        
-
-        foreach ($obatStokMenipis as $obat) {
- 
-            $totalPenjualanPeriode = DetailPenjualan::where('obat_id', $obat->id)
-                ->whereHas('penjualan', function($q) use ($tanggalMulai, $tanggalAkhir) {
-                    $q->whereBetween('tanggal_penjualan', [$tanggalMulai, $tanggalAkhir]);
-                })
-                ->sum('jumlah');
-
-            $stokSaatIni = $obat->stok;
-
-            $rekomendasi = $this->jalankanMesinFuzzy($totalPenjualanPeriode, $stokSaatIni, $fuzzyParams);
-            
-            if ($rekomendasi > 0) {
-                 $hasilPeramalan[] = [
-                    'obat_id' => $obat->id,
-                    'nama_obat' => $obat->nama_obat,
-                    'supplier' => $obat->supplier->nama_supplier ?? 'N/A',
-                    'supplier_id' => $obat->supplier_id,
-                    'kategori' => $obat->kategori,
-                    'stok_saat_ini' => $stokSaatIni,
-                    'total_penjualan_periode' => $totalPenjualanPeriode,
-                    'rekomendasi_pembelian' => $rekomendasi,
-                    'harga_box' => $obat->harga_box,
-                    'harga_pcs' => $obat->harga_satuan,
-                ];
-            }
-        }
-        
-        return view('perhitungan', [
-            'hasilPeramalan' => $hasilPeramalan,
-            'tanggalMulai' => $tanggalMulai,
-            'tanggalAkhir' => $tanggalAkhir,
-            'suppliers' => $suppliers,
-            'semuaObat' => $semuaObatForDropdown
-        ]);
     }
+    
+    // ======================================================================
+    // === BAGIAN KRITIS: PASTIKAN ANDA MENGAMBIL DAN MENGIRIM DATA INI =====
+    // ======================================================================
+    $semuaObatList = Obat::orderBy('nama_obat', 'asc')->get();
 
+    return view('perhitungan', [
+        'hasilPeramalan' => $hasilPeramalan,
+        'semuaObatList' => $semuaObatList, // <-- PASTIKAN BARIS INI ADA
+        'tanggalMulai' => $tanggalMulai->format('Y-m-d'),
+        'tanggalAkhir' => $tanggalAkhir->format('Y-m-d'),
+        'suppliers' => $suppliers,
+        'semuaObat' => $semuaObatForDropdown
+    ]);
+}
     // ===================================================================
     // =========== LOGIKA FUZZY MAMDANI DINAMIS ==========================
     // ===================================================================
 
-    private function getFuzzyParamsFromDB($tanggalMulai, $tanggalAkhir): array
-{
-    $penjualanPerObat = DetailPenjualan::select(DB::raw('SUM(jumlah) as total_jual'))
-        ->join('penjualans', 'detail_penjualans.penjualan_id', '=', 'penjualans.id')
-        ->whereBetween('penjualans.tanggal_penjualan', [$tanggalMulai, $tanggalAkhir])
-        ->groupBy('detail_penjualans.obat_id')
-        ->pluck('total_jual');
+    private function jalankanMesinFuzzy($penjualan, $stok, $obat) {
+        // 1. Dapatkan parameter fuzzy yang dinamis, spesifik untuk obat ini
+        $fuzzyParams = $this->getDynamicFuzzyParams($penjualan, $obat);
 
-    $minPenjualan = $penjualanPerObat->min() ?? 0;
-    $maxPenjualan = $penjualanPerObat->max() ?? 10;
-
-    $minStok = Obat::min('stok') ?? 0;
-    $maxStok = Obat::max('stok') ?? 50;
-
-    // =================================================================
-    // =========== PERUBAHAN UTAMA ADA DI BAGIAN INI =====================
-    // =================================================================
-    $maxPembelian = ceil($maxPenjualan * 0.2)+4;
-    if ($maxPembelian < 30) {
-        $maxPembelian = 30;
-    }
-
-    $params = [
-        'penjualan' => [$minPenjualan, $maxPenjualan],
-        'stok' => [$minStok, $maxStok],
-        'pembelian' => [0, $maxPembelian],
-    ];
-
-    if ($params['penjualan'][0] == $params['penjualan'][1]) $params['penjualan'][1]++;
-    if ($params['stok'][0] == $params['stok'][1]) $params['stok'][1]++;
-
-    return $params;
-}
-
-    private function jalankanMesinFuzzy($penjualan, $stok, array $fuzzyParams) {
+        // 2. Fuzzifikasi, Implikasi, dan Defuzzifikasi (tidak berubah)
         $derajat = $this->fuzzifikasi($penjualan, $stok, $fuzzyParams);
         $implikasi = $this->implikasiAturan($derajat);
         return $this->defuzzifikasi($implikasi, $fuzzyParams);
+    }
+
+    /**
+     * FUNGSI KUNCI: Membuat parameter fuzzy dinamis untuk setiap obat.
+     * "Penggaris" untuk penjualan kini dibuat berdasarkan histori penjualan obat itu sendiri.
+     */
+    private function getDynamicFuzzyParams($totalPenjualanObat, $obat): array
+    {
+        // Domain Penjualan: Dibuat berdasarkan total penjualan 3 bulan terakhir obat ini.
+        // Diberi sedikit ruang ekstra (misal * 1.5) untuk menangani lonjakan.
+        // Jika penjualan 0, diberi nilai default kecil.
+        $maxPenjualan = ($totalPenjualanObat > 0) ? ceil($totalPenjualanObat * 1.5) : 10;
+        $minPenjualan = 0;
+
+        // Domain Stok: Bisa tetap global atau dibuat lebih spesifik jika ada data.
+        // Untuk saat ini, kita gunakan min/max global agar lebih stabil.
+        $minStok = Obat::min('stok') ?? 0;
+        $maxStok = Obat::max('stok') ?? 50;
+
+        // Domain Pembelian: Disesuaikan dengan potensi penjualan obat ini.
+        // Rekomendasi maksimal adalah sekitar 120% dari penjualan terakhir.
+        $maxPembelian = ceil($totalPenjualanObat * 0.3);
+        if ($maxPembelian < 20) {
+            $maxPembelian = 20; // Batas bawah rekomendasi
+        }
+
+        $params = [
+            'penjualan' => [$minPenjualan, $maxPenjualan],
+            'stok' => [$minStok, $maxStok],
+            'pembelian' => [0, $maxPembelian],
+        ];
+
+        // Mencegah error jika min dan max sama
+        if ($params['penjualan'][0] == $params['penjualan'][1]) $params['penjualan'][1]++;
+        if ($params['stok'][0] == $params['stok'][1]) $params['stok'][1]++;
+
+        return $params;
     }
 
     private function fuzzifikasi($penjualan, $stok, array $fuzzyParams): array {
@@ -132,6 +129,12 @@ class PembelianController extends Controller
     }
     
     private function implikasiAturan($derajat): array {
+        // Aturan Fuzzy:
+        // R1: JIKA penjualan SEDIKIT AND stok SEDIKIT MAKA pembelian SEDIKIT
+        // R2: JIKA penjualan SEDIKIT AND stok BANYAK MAKA pembelian SEDIKIT
+        // R3: JIKA penjualan BANYAK AND stok SEDIKIT MAKA pembelian BANYAK  <-- ATURAN UTAMA
+        // R4: JIKA penjualan BANYAK AND stok BANYAK MAKA pembelian SEDIKIT
+        
         $alpha1 = min($derajat['penjualan_sedikit'], $derajat['stok_sedikit']);
         $alpha2 = min($derajat['penjualan_sedikit'], $derajat['stok_banyak']);
         $alpha3 = min($derajat['penjualan_banyak'], $derajat['stok_sedikit']);
@@ -151,6 +154,7 @@ class PembelianController extends Controller
         $pembilang = 0;
         $penyebut = 0;
 
+        // Menggunakan metode Centroid
         for ($z = $batasPembelian[0]; $z <= $batasPembelian[1]; $z++) {
             $miuSedikit = $this->turun($z, $batasPembelian[0], $batasPembelian[1]);
             $miuBanyak = $this->naik($z, $batasPembelian[0], $batasPembelian[1]);
@@ -166,13 +170,12 @@ class PembelianController extends Controller
             }
         }
         
-        if ($penyebut == 0) {
-            return 0;
-        }
+        if ($penyebut == 0) return 0;
         
         return round($pembilang / $penyebut);
     }
 
+    // Fungsi Keanggotaan (Membership Functions)
     private function turun($x, $a, $b) {
         if ($x <= $a) return 1;
         if ($x >= $b) return 0;
@@ -184,7 +187,6 @@ class PembelianController extends Controller
         if ($x >= $b) return 1;
         return ($x - $a) / ($b - $a);
     }
-
     // ===================================================================
     // =========== METHOD UNTUK MENYIMPAN PEMBELIAN ======================
     // ===================================================================
@@ -245,4 +247,12 @@ class PembelianController extends Controller
             return response()->json(['success' => false, 'message' => 'Terjadi kesalahan saat menyimpan pembelian.'], 500);
         }
     }
+    public function cetak(Pembelian $pembelian)
+{
+    // Eager load relasi untuk mengambil data detail, obat, supplier, dan pegawai
+    $pembelian->load(['detailPembelians.obat', 'supplier', 'pegawai']);
+
+    // Kirim data pembelian ke view 'pembelian.cetak'
+    return view('pembelian.cetak', compact('pembelian'));
+}
 }
