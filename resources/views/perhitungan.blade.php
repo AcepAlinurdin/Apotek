@@ -29,6 +29,8 @@
                                     <th class="py-3 px-6 text-center">Sisa Stok</th>
                                     <th class="py-3 px-6 text-center">Penjualan Periode</th>
                                     <th class="py-3 px-6 text-center font-bold">Rekomendasi</th>
+                                    <!-- [MODIFIED] Kolom baru ditambahkan di sini -->
+                                    <th class="py-3 px-6 text-center">Kategori Pembelian</th>
                                     <th class="py-3 px-6 text-center">Pilih</th>
                                 </tr>
                             </thead>
@@ -40,18 +42,45 @@
                                     <td class="py-3 px-6 text-center font-bold text-red-600">{{ $hasil['stok_saat_ini'] }}</td>
                                     <td class="py-3 px-6 text-center font-semibold">{{ $hasil['total_penjualan_periode'] }}</td>
                                     <td class="py-3 px-6 text-center font-bold text-blue-700 text-lg">{{ $hasil['rekomendasi_pembelian'] }}</td>
+                                    
+                                    <!-- [MODIFIED] Logika untuk menampilkan kategori pembelian -->
+                                    <td class="py-3 px-6 text-center">
+                                        @php
+                                            $rekomendasi = $hasil['rekomendasi_pembelian'];
+                                            $kategori = '';
+                                            $bgColor = '';
+                                            if ($rekomendasi >= 1 && $rekomendasi <= 20) {
+                                                $kategori = 'Sedikit';
+                                                $bgColor = 'bg-yellow-200 text-yellow-800';
+                                            } elseif ($rekomendasi >= 21 && $rekomendasi <= 30) {
+                                                $kategori = 'Normal';
+                                                $bgColor = 'bg-green-200 text-green-800';
+                                            } elseif ($rekomendasi >= 31 && $rekomendasi <= 50) {
+                                                $kategori = 'Banyak';
+                                                $bgColor = 'bg-blue-200 text-blue-800';
+                                            } else {
+                                                $kategori = 'Sangat Banyak'; // Kategori tambahan jika > 50
+                                                $bgColor = 'bg-red-200 text-red-800';
+                                            }
+                                        @endphp
+                                        <span class="px-2 py-1 font-semibold leading-tight rounded-full text-xs {{ $bgColor }}">
+                                            {{ $kategori }}
+                                        </span>
+                                    </td>
+
                                     <td class="py-3 px-6 text-center">
                                         <input type="checkbox" name="obat_terpilih[]" value="{{ $hasil['obat_id'] }}"
-                                            data-nama-obat="{{ $hasil['nama_obat'] }}"
-                                            data-rekomendasi="{{ $hasil['rekomendasi_pembelian'] }}"
-                                            data-harga-satuan="{{ $hasil['harga_pcs'] ?? 0 }}"
-                                            data-harga-box="{{ $hasil['harga_box'] ?? 0 }}"
-                                            data-supplier-id="{{ $hasil['supplier_id'] ?? '' }}"
-                                            class="form-checkbox h-5 w-5 text-indigo-600">
+                                               data-nama-obat="{{ $hasil['nama_obat'] }}"
+                                               data-rekomendasi="{{ $hasil['rekomendasi_pembelian'] }}"
+                                               data-harga-satuan="{{ $hasil['harga_pcs'] ?? 0 }}"
+                                               data-harga-box="{{ $hasil['harga_box'] ?? 0 }}"
+                                               data-supplier-id="{{ $hasil['supplier_id'] ?? '' }}"
+                                               class="form-checkbox h-5 w-5 text-indigo-600">
                                     </td>
                                 </tr>
                                 @empty
-                                <tr><td colspan="6" class="text-center p-6 text-gray-500">Tidak ada data obat dengan stok menipis untuk dihitung.</td></tr>
+                                <!-- [MODIFIED] Colspan diubah menjadi 7 -->
+                                <tr><td colspan="7" class="text-center p-6 text-gray-500">Tidak ada data obat dengan stok menipis untuk dihitung.</td></tr>
                                 @endforelse
                             </tbody>
                         </table>
@@ -66,7 +95,7 @@
                     </div>
 
                     <div class="flex space-x-4">
-                        @role('kepala apotek')
+                        
                             {{-- Tampilan untuk Kepala Apotek: Dua Tombol --}}
                             <button type="button" id="btn-buat-rencana" class="w-1/2 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md">
                                 Buat Rincian (Rekomendasi)
@@ -74,18 +103,13 @@
                             <button type="button" id="btn-pembelian-manual" class="w-1/2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-md">
                                 Pembelian Manual
                             </button>
-                        @else
-                            {{-- Tampilan untuk Apoteker (atau role lain): Satu Tombol Penuh --}}
-                            <button type="button" id="btn-buat-rencana" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md">
-                                Buat Rincian (Rekomendasi)
-                            </button>
-                        @endrole
+                        
                     </div>
                 </div>
 
                 <hr class="my-12 border-t-2 border-gray-200">
 
-                <!-- TABEL 2: DAFTAR SEMUA OBAT -->
+                
                 <div class="mb-12">
                     <h2 class="text-2xl font-semibold mb-4 text-gray-800">Daftar Stok Semua Obat</h2>
                     <div class="overflow-x-auto" style="max-height: 500px;">
@@ -336,20 +360,20 @@
                         contentType: 'application/json',
                         data: JSON.stringify(dataToSend),
                         success: function(response) {
-                             Swal.fire({
-                                title: 'Berhasil!',
-                                text: response.message,
-                                icon: 'success',
-                                showCancelButton: true,
-                                confirmButtonText: 'OK',
-                                cancelButtonText: 'Cetak Bukti',
-                                cancelButtonColor: '#1e40af'
-                            }).then((swalResult) => {
-                                if (swalResult.isDismissed && swalResult.dismiss === Swal.DismissReason.cancel) {
-                                    printReceipt(response.pembelian_id, result.value, suppliers);
-                                }
-                                window.location.reload();
-                            });
+                                Swal.fire({
+                                    title: 'Berhasil!',
+                                    text: response.message,
+                                    icon: 'success',
+                                    showCancelButton: true,
+                                    confirmButtonText: 'OK',
+                                    cancelButtonText: 'Cetak Bukti',
+                                    cancelButtonColor: '#1e40af'
+                                }).then((swalResult) => {
+                                    if (swalResult.isDismissed && swalResult.dismiss === Swal.DismissReason.cancel) {
+                                        printReceipt(response.pembelian_id, result.value, suppliers);
+                                    }
+                                    window.location.reload();
+                                });
                         },
                         error: function(xhr) {
                             Swal.fire('Gagal!', xhr.responseJSON.message || 'Terjadi kesalahan.', 'error');

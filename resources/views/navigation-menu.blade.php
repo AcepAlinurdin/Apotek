@@ -34,7 +34,7 @@
                     {{-- ====================================================== --}}
                     {{-- =========== PERUBAHAN UTAMA ADA DI SINI ============== --}}
                     {{-- ====================================================== --}}
-                    @hasanyrole('apoteker|kepala apotek')
+                    @hasanyrole('apoteker')
                     <x-nav-link href="{{ route('obat.rekap') }}" :active="request()->routeIs('obat.rekap')">
                         {{ __('Pembelian') }}
                     </x-nav-link>
@@ -120,7 +120,7 @@
                 {{ __('Pengecekan Stok') }}
             </x-responsive-nav-link>
             
-            @hasanyrole('apoteker|kepala apotek')
+            @hasanyrole('apoteker')
             <x-responsive-nav-link href="{{ route('obat.rekap') }}" :active="request()->routeIs('obat.rekap')">
                 {{ __('Pembelian') }}
             </x-responsive-nav-link>
