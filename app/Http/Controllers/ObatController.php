@@ -88,6 +88,7 @@ protected function processNewCheckout(array $cartItems)
             'jumlah' => $item['quantity'],
             'harga_satuan' => $obat->harga_satuan,
             'subtotal' => $obat->harga_satuan * $item['quantity'],
+            'satuan' => $obat->satuan,
         ]);
 
         $obat->decrement('stok', $item['quantity']);

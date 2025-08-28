@@ -47,6 +47,7 @@ class PembelianController extends Controller
                 'rekomendasi_pembelian' => $rekomendasi,
                 'harga_box' => $obat->harga_box,
                 'harga_pcs' => $obat->harga_satuan,
+                'satuan' => $obat->satuan,
             ];
         }
     }
@@ -227,6 +228,7 @@ class PembelianController extends Controller
                     'harga_beli_satuan' => $item['harga_beli_satuan'],
                     'harga_beli_box' => $item['harga_beli_box'],
                     'subtotal' => $subtotal,
+                    'satuan' => Obat::find($item['obat_id'])->satuan,
                 ]);
 
                 $obat = Obat::find($item['obat_id']);

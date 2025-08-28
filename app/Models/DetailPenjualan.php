@@ -18,6 +18,7 @@ class DetailPenjualan extends Model
         'jumlah',
         'harga_satuan',
         'subtotal',
+        'satuan',
     ];
 
     /**

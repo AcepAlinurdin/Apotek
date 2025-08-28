@@ -19,6 +19,7 @@ class PenjualanObat extends Model
         // 'harga_satuan', // HAPUS BARIS INI
         'total_harga',   // PASTIKAN BARIS INI ADA
         'tanggal',
+        'satuan', // TAMBAHKAN BARIS INI
     ];
 
     /**

@@ -29,6 +29,7 @@
                                     <th class="py-3 px-6 text-center">Sisa Stok</th>
                                     <th class="py-3 px-6 text-center">Penjualan Periode</th>
                                     <th class="py-3 px-6 text-center font-bold">Rekomendasi</th>
+                                    <th class="py-3 px-6 text-center">Satuan</th>
                                     <!-- [MODIFIED] Kolom baru ditambahkan di sini -->
                                     <th class="py-3 px-6 text-center">Kategori Pembelian</th>
                                     <th class="py-3 px-6 text-center">Pilih</th>
@@ -42,6 +43,7 @@
                                     <td class="py-3 px-6 text-center font-bold text-red-600">{{ $hasil['stok_saat_ini'] }}</td>
                                     <td class="py-3 px-6 text-center font-semibold">{{ $hasil['total_penjualan_periode'] }}</td>
                                     <td class="py-3 px-6 text-center font-bold text-blue-700 text-lg">{{ $hasil['rekomendasi_pembelian'] }}</td>
+                                    <td class="py-3 px-6 text-center">{{ $hasil['satuan'] }}</td>
                                     
                                     <!-- [MODIFIED] Logika untuk menampilkan kategori pembelian -->
                                     <td class="py-3 px-6 text-center">
@@ -114,12 +116,13 @@
                     <h2 class="text-2xl font-semibold mb-4 text-gray-800">Daftar Stok Semua Obat</h2>
                     <div class="overflow-x-auto" style="max-height: 500px;">
                         <table class="w-full border-collapse">
-                            <thead class="sticky top-0 bg-gray-600">
+                            <thead class="sticky top-0 bg-blue-600">
                                 <tr class="text-white uppercase text-sm leading-normal">
                                     <th class="py-3 px-6 text-left">No</th>
                                     <th class="py-3 px-6 text-left">Nama Obat</th>
                                     <th class="py-3 px-6 text-left">Kategori</th>
                                     <th class="py-3 px-6 text-center">Sisa Stok</th>
+                                    <th class="py-3 px-6 text-center">Satuan</th>
                                 </tr>
                             </thead>
                             <tbody class="text-gray-700 text-sm">
@@ -129,6 +132,7 @@
                                         <td class="py-3 px-6 text-left font-medium">{{ $obat->nama_obat }}</td>
                                         <td class="py-3 px-6 text-left">{{ $obat->kategori }}</td>
                                         <td class="py-3 px-6 text-center font-bold {{ $obat->stok < 21 ? 'text-red-600' : 'text-gray-700' }}">{{ $obat->stok }}</td>
+                                        <td class="py-3 px-6 text-center">{{ $obat->satuan }}</td>
                                     </tr>
                                 @empty
                                     <tr><td colspan="4" class="text-center p-6 text-gray-500">Tidak ada data obat di database.</td></tr>

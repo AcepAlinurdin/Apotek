@@ -141,6 +141,7 @@
                                     <th class="py-3 px-6 text-left">Kategori</th>
                                     <th class="py-3 px-6 text-left">Supplier</th>
                                     <th class="py-3 px-6 text-center">Stok</th>
+                                    <th class="py-3 px-6 text-center">Satuan</th>
                                     <th class="py-3 px-6 text-right">Harga Satuan</th>
                                     <th class="py-3 px-6 text-right">Harga Box</th>
                                     <th class="py-3 px-6 text-center">Aksi</th>
@@ -155,7 +156,8 @@
                                     <td class="py-3 px-6 text-left font-medium">{{ $obat->nama_obat }}</td>
                                     <td class="py-3 px-6 text-left">{{ $obat->kategori }}</td>
                                     <td class="py-3 px-6 text-left">{{ $obat->supplier?->nama_supplier ?? 'N/A' }}</td>
-                                    <td class="py-3 px-6 text-center font-bold">{{ $obat->stok }} {{ $obat->satuan }}</td>
+                                    <td class="py-3 px-6 text-center font-bold">{{ $obat->stok }}</td>
+                                    <td class="py-3 px-6 text-center">{{ $obat->satuan }}</td>
                                     <td class="py-3 px-6 text-right">Rp
                                         {{ number_format($obat->harga_satuan, 0, ',', '.') }}</td>
                                     <td class="py-3 px-6 text-right">Rp

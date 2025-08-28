@@ -36,6 +36,7 @@
                                     <th class="py-3 px-6 text-left">Kategori</th>
                                     <th class="py-3 px-6 text-left">Nama Obat</th>
                                     <th class="py-3 px-6 text-center">Stok Akhir</th>
+                                    <th class="py-3 px-6 text-center">Satuan</th>
                                     <th class="py-3 px-6 text-center">Status</th>
                                 </tr>
                             </thead>
@@ -46,6 +47,7 @@
                                         <td class="py-3 px-6 text-left">{{ $obat->kategori }}</td>
                                         <td class="py-3 px-6 text-left font-medium">{{ $obat->nama_obat }}</td>
                                         <td class="py-3 px-6 text-center font-bold">{{ $obat->stok }}</td>
+                                        <td class="py-3 px-6 text-center">{{ $obat->satuan }}</td>
                                         <td class="py-3 px-6 text-center">
                                             @if($obat->stok < 20)
                                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
@@ -82,6 +84,7 @@
                                     <th class="py-3 px-6 text-left">Kategori</th>
                                     <th class="py-3 px-6 text-left">Nama Obat</th>
                                     <th class="py-3 px-6 text-center">Sisa Stok</th>
+                                    <th class="py-3 px-6 text-center">Satuan</th>
                                 </tr>
                             </thead>
                             <tbody class="text-gray-700 text-sm">
@@ -91,6 +94,7 @@
                                         <td class="py-3 px-6 text-left">{{ $obat->kategori }}</td>
                                         <td class="py-3 px-6 text-left font-medium">{{ $obat->nama_obat }}</td>
                                         <td class="py-3 px-6 text-center font-bold">{{ $obat->stok }}</td>
+                                        <td class="py-3 px-6 text-center">{{ $obat->satuan }}</td>
                                     </tr>
                                 @empty
                                     <tr class="border-b border-gray-200">

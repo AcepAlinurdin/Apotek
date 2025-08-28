@@ -13,6 +13,7 @@ class Penjualan extends Model
         'pegawai_id',
         'tanggal_penjualan',
         'total_harga',
+        'satuan',
     ];
 
     /**

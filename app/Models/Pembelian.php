@@ -27,6 +27,7 @@ class Pembelian extends Model
         'supplier_id',
         'tanggal_pembelian',
         'total_harga',
+        'satuan',
         'status',
     ];
 
