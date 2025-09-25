@@ -26,20 +26,26 @@
                     <x-nav-link href="{{ route('penjualan.index') }}" :active="request()->routeIs('penjualan.index')">
                         {{ __('Penjualan') }}
                     </x-nav-link>
-
+                    
+                    {{-- ========================================================== --}}
+                    {{-- =========== BARU: Link Data Pasien untuk Apoteker ======== --}}
+                    {{-- ========================================================== --}}
+                    @hasanyrole('apoteker')
+                    <x-nav-link href="{{ route('pasien.index') }}" :active="request()->routeIs('pasien.*')">
+                        {{ __('Data Pasien') }}
+                    </x-nav-link>
+                    @endhasanyrole
+                    {{-- ========================================================== --}}
+                    
                     <x-nav-link href="{{ route('obat.stok') }}" :active="request()->routeIs('obat.stok')">
                         {{ __('Pengecekan Stok') }}
                     </x-nav-link>
 
-                    {{-- ====================================================== --}}
-                    {{-- =========== PERUBAHAN UTAMA ADA DI SINI ============== --}}
-                    {{-- ====================================================== --}}
                     @hasanyrole('apoteker')
                     <x-nav-link href="{{ route('obat.rekap') }}" :active="request()->routeIs('obat.rekap')">
                         {{ __('Pembelian') }}
                     </x-nav-link>
                     @endhasanyrole
-                    {{-- ====================================================== --}}
 
                 </div>
             </div>
@@ -115,6 +121,16 @@
                 :active="request()->routeIs('penjualan.index')">
                 {{ __('Penjualan') }}
             </x-responsive-nav-link>
+
+             {{-- ========================================================== --}}
+             {{-- ====== BARU: Link Data Pasien untuk Apoteker (Mobile) ====== --}}
+             {{-- ========================================================== --}}
+             @hasanyrole('apoteker')
+             <x-responsive-nav-link href="{{ route('pasien.create') }}" :active="request()->routeIs('pasien.create')">
+                 {{ __('Data Pasien') }}
+             </x-responsive-nav-link>
+             @endhasanyrole
+             {{-- ========================================================== --}}
 
             <x-responsive-nav-link href="{{ route('obat.stok') }}" :active="request()->routeIs('obat.stok')">
                 {{ __('Pengecekan Stok') }}

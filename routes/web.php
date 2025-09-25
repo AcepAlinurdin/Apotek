@@ -5,6 +5,11 @@ use App\Http\Controllers\ObatController;
 use App\Http\Controllers\PembelianController;
 USE App\Http\Controllers\SupplierController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\PasienController;
+use App\Http\Controllers\UserController;
+// Pastikan ini ada di atas
+use App\Http\Controllers\PaketObatController; // Dan ini juga
+
 // Pastikan Anda membuat UserController jika belum ada
 // use App\Http\Controllers\UserController;
 
@@ -144,6 +149,26 @@ Route::middleware([
     });
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::patch('/pembelian/{pembelian}/lunas', [PembelianController::class, 'updateStatusLunas'])->name('pembelian.update.lunas')->middleware('auth');
+
+
+// === KELOMPOK ROUTE UNTUK API (PENCARIAN & RIWAYAT) ===
+Route::middleware(['auth', 'role:apoteker'])->prefix('api')->name('api.')->group(function () {
+    Route::get('/pasien/search', [PasienController::class, 'search'])->name('pasien.search');
+    Route::get('/pasien/{pasien}/riwayat', [PasienController::class, 'getHistory'])->name('pasien.history');
+});
+
+// === KELOMPOK ROUTE UNTUK MANAJEMEN PASIEN (CRUD WEB) ===
+Route::middleware(['auth', 'role:apoteker'])->group(function () {
+    Route::resource('pasien', PasienController::class);
+});
+Route::resource('paket-obat', PaketObatController::class)->middleware('auth');
+Route::get('/api/paket-obat/{paket}', [ObatController::class, 'getPaketDetail'])
+    ->middleware('auth')
+    ->name('api.paket.detail');
+Route::delete('/users/{user}/deactivate', [UserController::class, 'deactivate'])->name('users.deactivate');
+
+// Route untuk mengaktifkan kembali pengguna
+Route::post('/users/{id}/reactivate', [UserController::class, 'reactivate'])->name('users.reactivate');
 }); // <-- Tambahkan penutup kurung kurawal dan tanda kurung tutup di sini
 
 // Rute-rute lama yang tidak terpakai atau sudah dipindahkan bisa dihapus.

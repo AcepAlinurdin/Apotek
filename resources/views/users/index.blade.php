@@ -8,6 +8,7 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
+                {{-- Bagian Form Tambah/Edit Pengguna (Tidak ada perubahan, sudah benar) --}}
                 <div x-data="{ open: {{ $user->exists || $errors->any() ? 'true' : 'false' }} }">
                     <div class="flex justify-between items-center mb-4">
                         <div x-show="!open">
@@ -74,7 +75,6 @@
                                             password.</p>
                                         @endif
                                     </div>
-
                                     <div class="mt-4">
                                         <x-label for="password_confirmation" value="Konfirmasi Password" />
                                         <input id="password_confirmation"
@@ -84,7 +84,6 @@
                                     </div>
                                 </div>
                             </div>
-
                             <div class="flex items-center justify-end mt-6">
                                 @if ($user->exists)
                                 <a href="{{ route('users.index') }}"
@@ -106,6 +105,7 @@
                 </div>
                 @endif
 
+                {{-- Bagian Tabel Pengguna (Ada Perubahan) --}}
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
@@ -113,43 +113,60 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                                 <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             @forelse ($users as $item)
-                            <tr>
+                            <tr class="{{ $item->trashed() ? 'bg-red-50 opacity-70' : '' }}">
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                     {{ $item->name }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $item->email }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     @if(!$item->roles->isEmpty())
-                                    <span
-                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
                                         {{ Str::title($item->roles->first()->name) }}
                                     </span>
                                     @endif
                                 </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    @if ($item->trashed())
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                        Tidak Aktif
+                                    </span>
+                                    @else
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        Aktif
+                                    </span>
+                                    @endif
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                                    @can('update', $item)
-                                    <a href="{{ route('users.edit', $item->id) }}"
-                                        class="text-indigo-600 hover:text-indigo-900 mr-4">Edit</a>
-                                    @endcan
+                                    @if ($item->trashed())
+                                        {{-- Jika pengguna tidak aktif, tampilkan tombol Aktifkan --}}
+                                        <form action="{{ route('users.reactivate', $item->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Anda yakin ingin mengaktifkan kembali pengguna ini?');">
+                                            @csrf
+                                            <button type="submit" class="text-green-600 hover:text-green-900">Aktifkan</button>
+                                        </form>
+                                    @else
+                                        {{-- Jika pengguna aktif, tampilkan tombol Edit dan Nonaktifkan --}}
+                                        @can('update', $item)
+                                        <a href="{{ route('users.edit', $item->id) }}" class="text-indigo-600 hover:text-indigo-900 mr-4">Edit</a>
+                                        @endcan
 
-                                    @can('delete', $item)
-                                    <form action="{{ route('users.destroy', $item->id) }}" method="POST"
-                                        class="inline-block"
-                                        onsubmit="return confirm('Apakah Anda yakin ingin menghapus pengguna ini?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-red-600 hover:text-red-900">Hapus</button>
-                                    </form>
-                                    @endcan
+                                        @can('delete', $item)
+                                        <form action="{{ route('users.deactivate', $item->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menonaktifkan pengguna ini?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-red-600 hover:text-red-900">Nonaktifkan</button>
+                                        </form>
+                                        @endcan
+                                    @endif
                                 </td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">Tidak ada data
+                                <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">Tidak ada data
                                     pengguna lain.</td>
                             </tr>
                             @endforelse

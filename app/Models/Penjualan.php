@@ -14,6 +14,7 @@ class Penjualan extends Model
         'tanggal_penjualan',
         'total_harga',
         'satuan',
+        'id_pasien',
     ];
 
     /**

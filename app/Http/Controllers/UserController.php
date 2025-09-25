@@ -13,16 +13,12 @@ class UserController extends Controller
 {
     public function index()
     {
-   
         return $this->edit(new User());
     }
 
- 
     public function store(Request $request)
     {
         $requestedRole = $request->input('role');
-
-    
         Gate::authorize('create-user-with-role', $requestedRole);
 
         $request->validate([
@@ -43,16 +39,15 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'Pengguna berhasil ditambahkan.');
     }
 
-
     public function edit(User $user)
     {
         $this->authorize('update', $user);
-        $users = User::where('id', '!=', auth()->id())->latest()->paginate(10);
         
+        $users = User::withTrashed()->where('id', '!=', auth()->id())->latest()->paginate(10);
+
         $allRoles = Role::all();
         $allowedRoles = [];
 
-        
         foreach ($allRoles as $role) {
             if (Gate::allows('create-user-with-role', $role->name)) {
                 $allowedRoles[] = $role;
@@ -66,12 +61,10 @@ class UserController extends Controller
         ]);
     }
 
-  
     public function update(Request $request, User $user)
     {
         $this->authorize('update', $user);
         $requestedRole = $request->input('role');
-
         Gate::authorize('create-user-with-role', $requestedRole);
 
         $request->validate([
@@ -90,18 +83,25 @@ class UserController extends Controller
             $user->update(['password' => Hash::make($request->password)]);
         }
 
-      
         $user->syncRoles($requestedRole);
 
         return redirect()->route('users.index')->with('success', 'Data pengguna berhasil diperbarui.');
     }
-
     public function destroy(User $user)
-{
-   
-    $this->authorize('delete', $user);
-
-    $user->delete();
-    return redirect()->route('users.index')->with('success', 'Pengguna berhasil dihapus.');
-}
+    {
+        $this->authorize('delete', $user);
+        $user->delete();
+        return redirect()->route('users.index')->with('success', 'Pengguna berhasil dihapus.');
+    }
+    public function deactivate(User $user)
+    {
+        $user->delete();
+        return redirect()->route('users.index')->with('success', 'Pengguna berhasil dinonaktifkan.');
+    }
+    public function reactivate($id)
+    {
+        $user = User::onlyTrashed()->findOrFail($id);
+        $user->restore(); 
+        return redirect()->route('users.index')->with('success', 'Pengguna berhasil diaktifkan kembali.');
+    }
 }
